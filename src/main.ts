@@ -2,7 +2,8 @@ import { registerSW } from "virtual:pwa-register";
 import "./style.css";
 import "@fontsource/archivo-black/400.css";
 import "@fontsource/oswald/700.css";
-import "@fontsource/roboto-mono/400.css";
+import "@fontsource/space-mono/400.css";
+import "@fontsource/space-mono/700.css";
 import { installGlobalErrorOverlay } from "./ui/globalErrorOverlay";
 
 import { isWebGPUAvailable } from "./gpu/gpu_utils";

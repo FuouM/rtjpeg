@@ -8,11 +8,11 @@ export const PANEL_CLASS =
 const MONO_BRUTAL_BTN =
   "font-black uppercase border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-colors cursor-pointer leading-none brutal-btn";
 
-/** Sidebar, modals, comparison — 8px mono */
-export const MONO_BUTTON_CLASS = `font-mono text-[8px] tracking-widest ${MONO_BRUTAL_BTN} px-1.5 py-0.5`;
+/** Sidebar, modals, comparison — compact but crisp mono */
+export const MONO_BUTTON_CLASS = `font-mono text-[10px] tracking-[0.12em] ${MONO_BRUTAL_BTN} px-1.5 py-0.5`;
 
-/** Tighter mono (e.g. RESEED) — 7px */
-export const MONO_BUTTON_COMPACT_CLASS = `font-mono text-[7px] tracking-widest ${MONO_BRUTAL_BTN} px-1 py-0.5`;
+/** Tighter mono (e.g. RESEED) */
+export const MONO_BUTTON_COMPACT_CLASS = `font-mono text-[9px] tracking-[0.12em] ${MONO_BRUTAL_BTN} px-1 py-0.5`;
 
 export const TRANSPORT_PLAY_PAUSE_BUTTON_CLASS = `inline-flex w-[5.5rem] max-lg:w-[5rem] shrink-0 items-center justify-center font-mono text-[11px] font-black uppercase tracking-widest border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black px-2 py-1.5 hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-colors cursor-pointer leading-none brutal-btn max-lg:py-1`;
 
@@ -34,7 +34,7 @@ export const PARAM_TEXTAREA_CLASS = `preset-textarea param-input w-full ${PARAM_
 export const PARAM_SELECT_FLEX_CLASS = `param-input flex-1 min-w-0 ${PARAM_FIELD_CHROME} cursor-pointer appearance-none`;
 
 /** Preset dropdown in controls header */
-export const PARAM_PRESET_CHOOSER_CLASS = `param-input w-full min-w-0 ${PARAM_FIELD_CHROME} cursor-pointer appearance-none text-[9px] font-black uppercase tracking-[0.08em]`;
+export const PARAM_PRESET_CHOOSER_CLASS = `param-input w-full min-w-0 ${PARAM_FIELD_CHROME} cursor-pointer appearance-none text-[10px] font-black uppercase tracking-[0.06em]`;
 
 /** Header file picker */
 export const PARAM_FILE_INPUT_CLASS = `param-file w-full ${PARAM_FIELD_CHROME} cursor-pointer`;
@@ -43,7 +43,7 @@ export const PARAM_FILE_INPUT_CLASS = `param-file w-full ${PARAM_FIELD_CHROME} c
 export const PARAM_INPUT_NUMBER_CLASS = `param-input flex-1 min-w-0 ${PARAM_FIELD_CHROME} font-bold tabular-nums text-right`;
 
 const ACCENT_EXPORT_BASE =
-  "flex-1 min-w-0 font-mono text-[9px] font-black uppercase border-2 border-black dark:border-white text-black py-1.5 hover:bg-white transition-colors cursor-pointer leading-tight brutal-btn text-center";
+  "flex-1 min-w-0 font-mono text-[10px] font-black uppercase border-2 border-black dark:border-white text-black py-1.5 hover:bg-white transition-colors cursor-pointer leading-tight brutal-btn text-center";
 
 export const ACCENT_EXPORT_LIVE_CLASS = `${ACCENT_EXPORT_BASE} tracking-[0.08em] bg-[#2eff46] px-0.5 lg:py-1`;
 

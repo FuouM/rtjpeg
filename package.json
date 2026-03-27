@@ -40,7 +40,7 @@
     "@ffmpeg/util": "^0.12.2",
     "@fontsource/archivo-black": "^5.2.8",
     "@fontsource/oswald": "^5.2.8",
-    "@fontsource/roboto-mono": "^5.2.8",
+    "@fontsource/space-mono": "^5.2.9",
     "fix-webm-duration": "^1.0.6",
     "mediabunny": "^1.40.1",
     "mp4box": "^2.3.0",

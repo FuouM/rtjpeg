@@ -29,12 +29,12 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  font-family: "Roboto Mono", monospace;
+  font-family: "Space Mono", monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: inherit;
-  letter-spacing: -0.02em;
-  font-weight: 500;
+  letter-spacing: 0;
+  font-weight: 400;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -265,8 +265,8 @@ html:not(.dark)
   height: 1.125rem;
   padding: 0;
   margin: 0;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.5625rem;
+  font-family: "Space Mono", monospace;
+  font-size: 0.625rem;
   font-weight: 900;
   line-height: 1;
   color: inherit;
@@ -284,11 +284,11 @@ html:not(.dark)
   box-sizing: border-box;
   max-width: min(280px, calc(100vw - 20px));
   padding: 0.45rem 0.55rem;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.625rem;
+  font-family: "Space Mono", monospace;
+  font-size: 0.6875rem;
   font-weight: 700;
   line-height: 1.4;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   color: #fff;
   background: #000;
   border: 2px solid #fff;
@@ -386,14 +386,14 @@ html.dark .param-help:focus-visible {
 .param-panel .param-file,
 .app-top-header .param-file {
   padding: 0.25rem 0.375rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.25;
 }
 
 .param-panel .param-file::file-selector-button,
 .app-top-header .param-file::file-selector-button {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.625rem;
+  font-family: "Space Mono", monospace;
+  font-size: 0.6875rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -746,7 +746,7 @@ html.dark .global-error-panel {
 .global-error-title,
 .pwa-status-title {
   margin: 0;
-  font-family: "Roboto Mono", monospace;
+  font-family: "Space Mono", monospace;
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -757,7 +757,7 @@ html.dark .global-error-panel {
 .global-error-body,
 .pwa-status-body {
   margin: 0;
-  font-family: "Roboto Mono", monospace;
+  font-family: "Space Mono", monospace;
   font-size: 0.72rem;
   line-height: 1.45;
 }
@@ -776,7 +776,7 @@ html.dark .global-error-panel {
   background: #fff;
   color: #000;
   padding: 0.75rem;
-  font-family: "Roboto Mono", monospace;
+  font-family: "Space Mono", monospace;
   font-size: 0.72rem;
   line-height: 1.45;
 }
@@ -796,7 +796,7 @@ html.dark .global-error-report {
 
 .global-error-button,
 .pwa-status-button {
-  font-family: "Roboto Mono", monospace;
+  font-family: "Space Mono", monospace;
   font-size: 0.7rem;
   font-weight: 900;
   text-transform: uppercase;

@@ -32,8 +32,8 @@ export function renderAppShell(): void {
             <span style="color: #2eff46">RT</span><span class="title-jpeg-glitch">_JPEG</span>
           </h1>
           <div class="hidden sm:flex flex-col gap-0 leading-none shrink-0" role="group" aria-label="Runtime">
-            <span class="font-mono text-[7px] font-black uppercase tracking-[0.2em] text-black dark:text-muted">WebGPU</span>
-            <span class="font-mono text-[7px] font-black uppercase tracking-[0.2em] text-black dark:text-muted tabular-nums">v${APP_VERSION}</span>
+            <span class="font-mono text-[9px] font-black uppercase tracking-[0.12em] text-black dark:text-muted">WebGPU</span>
+            <span class="font-mono text-[9px] font-black uppercase tracking-[0.12em] text-black dark:text-muted tabular-nums">v${APP_VERSION}</span>
           </div>
           ${renderHelpButton(
             `RT_JPEG is a real-time JPEG artifact simulator. It uses WebGPU to process video/images through a custom JPEG-like pipeline:
@@ -56,7 +56,7 @@ export function renderAppShell(): void {
             class="hidden lg:flex flex-col gap-0.5 shrink-0 border-l-2 border-black dark:border-white pl-2 ml-0.5"
             role="group"
             aria-label="Wide screen: panel columns">
-            <span class="font-mono text-[7px] font-black uppercase tracking-[0.15em] text-subtitle leading-none">Panels</span>
+            <span class="font-mono text-[9px] font-black uppercase tracking-[0.1em] text-subtitle leading-none">Panels</span>
             <div class="flex flex-wrap items-center gap-1">
               <button type="button" id="ws-layout-split-btn"
                 class="${MONO_BUTTON_CLASS} shrink-0"
@@ -78,7 +78,7 @@ export function renderAppShell(): void {
           <div
             class="max-sm:flex max-sm:min-w-0 max-sm:w-full max-sm:flex-row max-sm:flex-wrap max-sm:items-center max-sm:gap-x-2 sm:contents">
             <div
-              class="flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono font-black uppercase tracking-[0.14em] text-[7px] max-sm:gap-x-2 max-sm:text-[10px] max-sm:justify-start sm:justify-end sm:text-[8px]">
+              class="flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono font-black uppercase tracking-[0.08em] text-[9px] max-sm:gap-x-2 max-sm:text-[10px] max-sm:justify-start sm:justify-end sm:text-[9px]">
               <a href="https://github.com/FuouM/rtjpeg" target="_blank" rel="noopener noreferrer"
                 class="text-black dark:text-white underline decoration-1 underline-offset-2 decoration-highlight transition-colors hover:text-highlight dark:hover:text-highlight max-sm:inline-flex max-sm:items-center max-sm:justify-start max-sm:py-0.5 max-sm:decoration-2">
                 GitHub
@@ -92,17 +92,17 @@ export function renderAppShell(): void {
               <button type="button" id="changelog-header-btn"
                 title="View release notes for this version"
                 aria-label="Open changelog"
-                class="text-black dark:text-white underline decoration-1 underline-offset-2 decoration-highlight transition-colors hover:text-highlight dark:hover:text-highlight max-sm:inline-flex max-sm:items-center max-sm:justify-start max-sm:py-0.5 max-sm:decoration-2 font-mono font-black uppercase tracking-[0.14em] text-[7px] max-sm:text-[10px] sm:text-[8px]">
+                class="text-black dark:text-white underline decoration-1 underline-offset-2 decoration-highlight transition-colors hover:text-highlight dark:hover:text-highlight max-sm:inline-flex max-sm:items-center max-sm:justify-start max-sm:py-0.5 max-sm:decoration-2 font-mono font-black uppercase tracking-[0.08em] text-[9px] max-sm:text-[10px] sm:text-[9px]">
                 Changelog
               </button>
             </div>
             <p
-              class="font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-subtitle leading-snug max-sm:inline-flex max-sm:items-center max-sm:text-[9px] max-sm:leading-tight sm:block sm:text-[8px]">
+              class="font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-subtitle leading-snug max-sm:inline-flex max-sm:items-center max-sm:text-[9px] max-sm:leading-tight sm:block sm:text-[9px]">
               Vibecoded by a real human <span class="text-red-600 dark:text-red-500">&lt;3</span>
             </p>
           </div>
           <p
-            class="max-sm:w-full font-mono text-[7px] font-bold uppercase tracking-[0.1em] text-subtitle leading-tight max-sm:text-[9px] max-sm:leading-tight sm:leading-snug sm:text-[8px] max-[469px]:whitespace-normal min-[470px]:max-sm:whitespace-nowrap sm:whitespace-normal lg:whitespace-nowrap">
+            class="max-sm:w-full font-mono text-[9px] font-bold uppercase tracking-[0.05em] text-subtitle leading-tight max-sm:text-[9px] max-sm:leading-tight sm:leading-snug sm:text-[9px] max-[469px]:whitespace-normal min-[470px]:max-sm:whitespace-nowrap sm:whitespace-normal lg:whitespace-nowrap">
             Nothing you load is uploaded; <br class="hidden max-[469px]:block sm:block lg:hidden" aria-hidden="true" />processing stays in your browser.
           </p>
         </div>
