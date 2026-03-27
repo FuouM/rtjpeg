@@ -26,9 +26,9 @@ export function renderAppShell(): void {
     <header
       class="app-top-header flex-shrink-0 border-2 border-black dark:border-white bg-white dark:bg-panel py-1 px-2 brutal-shadow relative max-lg:py-0.5 max-lg:px-1.5">
       <div class="absolute top-0 left-0 w-1 h-full bg-highlight"></div>
-      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 pr-0.5 max-lg:gap-x-1.5 max-lg:gap-y-0.5 max-lg:pl-2 max-lg:pr-0.5">
-        <div class="flex flex-wrap items-center gap-1.5 shrink-0 max-lg:gap-1 min-w-0">
-          <h1 class="font-oswald text-lg tracking-tighter uppercase leading-none lg:text-3xl">
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 pr-0.5 max-lg:gap-x-1.5 max-lg:gap-y-0.5 max-lg:pl-2 max-lg:pr-0.5 lg:flex-nowrap">
+        <div class="flex flex-wrap items-center gap-1.5 shrink-0 max-lg:gap-1 min-w-0 lg:flex-nowrap">
+          <h1 class="font-oswald text-lg tracking-normal uppercase leading-tight lg:text-3xl lg:tracking-tighter lg:leading-none shrink-0 whitespace-nowrap overflow-visible">
             <span style="color: #2eff46">RT</span><span class="title-jpeg-glitch">_JPEG</span>
           </h1>
           <div class="hidden sm:flex flex-col gap-0 leading-none shrink-0" role="group" aria-label="Runtime">
@@ -47,7 +47,7 @@ export function renderAppShell(): void {
             "shrink-0",
           )}
           <div id="header-video-upload-dropzone"
-            class="min-w-0 w-full max-w-full basis-[8rem] flex-1 max-lg:basis-full sm:w-[220px] sm:max-w-[220px] sm:flex-none sm:shrink-0 transition-[box-shadow,background-color]">
+            class="min-w-0 w-full max-w-full basis-[8rem] flex-1 max-lg:basis-full sm:flex-none sm:shrink-0 sm:max-lg:w-[min(22rem,100%)] sm:max-lg:max-w-[min(22rem,100%)] lg:w-[min(16rem,100%)] lg:max-w-[min(16rem,100%)] transition-[box-shadow,background-color]">
             <input type="file" id="video-upload" accept="video/*,image/*" title="Load a video or image file"
               aria-label="Load video or image file"
               class="${PARAM_FILE_INPUT_CLASS}" />
@@ -57,7 +57,7 @@ export function renderAppShell(): void {
             role="group"
             aria-label="Wide screen: panel columns">
             <span class="font-mono text-[9px] font-black uppercase tracking-[0.1em] text-subtitle leading-none">Panels</span>
-            <div class="flex flex-wrap items-center gap-1">
+            <div class="flex flex-nowrap items-center gap-1">
               <button type="button" id="ws-layout-split-btn"
                 class="${MONO_BUTTON_CLASS} shrink-0"
                 title="Parameters left, flow right (default)"
