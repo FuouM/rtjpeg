@@ -1,6 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
-import ffmpegClassWorkerUrl from "@ffmpeg/ffmpeg/worker?url";
 import ffmpegCoreUrl from "@ffmpeg/core?url";
 import ffmpegWasmUrl from "@ffmpeg/core/wasm?url";
 import { TRANSCODE_DISK_CACHE_NAME } from "../runtime/constants";
@@ -122,7 +121,6 @@ async function ensureFfmpegLoaded(
     ffmpegLoadPromise = ffmpeg
       .load(
         {
-          classWorkerURL: ffmpegClassWorkerUrl,
           coreURL: ffmpegCoreUrl,
           wasmURL: ffmpegWasmUrl,
         },
