@@ -22,6 +22,13 @@ export interface PreparedVideoUpload {
   fromCache: boolean;
 }
 
+interface Mp4VideoTrackProbe {
+  codec: string;
+  width: number;
+  height: number;
+  description?: Uint8Array;
+}
+
 interface PrepareVideoUploadOptions {
   signal?: AbortSignal;
   onStatus?: (message: string) => void;
@@ -47,11 +54,26 @@ export async function prepareVideoUpload(
   options: PrepareVideoUploadOptions = {},
 ): Promise<PreparedVideoUpload> {
   if (DEBUG_MEDIA_LOGS) {
-    console.info("[rtjpeg] preparing uploaded video via ffmpeg.wasm", {
+    console.info("[rtjpeg] preparing uploaded video", {
       name: file.name,
       type: file.type,
       size: file.size,
     });
+  }
+  options.onStatus?.("Checking whether upload is already compatible...");
+  if (await canUseUploadWithoutTranscode(file, options.signal)) {
+    if (DEBUG_MEDIA_LOGS) {
+      console.info("[rtjpeg] using original upload without transcode", {
+        name: file.name,
+      });
+    }
+    options.onStatus?.("Using original MP4 upload.");
+    return {
+      blob: file,
+      fileName: file.name,
+      transcoded: false,
+      fromCache: false,
+    };
   }
   options.onStatus?.("Checking local transcoded cache...");
   const cachedBlob = await readCachedTranscode(file);
@@ -281,6 +303,169 @@ async function transcodeVideoToMp4Internal(
     ffmpegProgressCallback = null;
     await safeDeleteFile(inputPath);
     await safeDeleteFile(outputPath);
+  }
+}
+
+async function canUseUploadWithoutTranscode(
+  file: File,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  throwIfAborted(signal);
+  if (!looksLikeMp4Upload(file)) return false;
+  if (!(await probePlayableBlob(file, signal))) return false;
+
+  const track = await probeMp4VideoTrack(file, signal);
+  if (!track) return false;
+  if (!/^avc[13](?:\.|$)/i.test(track.codec)) return false;
+  if (track.width <= 0 || track.height <= 0) return false;
+  if (track.width % 2 !== 0 || track.height % 2 !== 0) return false;
+
+  if (typeof VideoDecoder === "undefined") {
+    return true;
+  }
+
+  try {
+    const { supported } = await VideoDecoder.isConfigSupported({
+      codec: track.codec,
+      codedWidth: track.width,
+      codedHeight: track.height,
+      description: track.description,
+    });
+    return supported ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function looksLikeMp4Upload(file: File): boolean {
+  if (file.type === FIREFOX_SAFE_MP4_MIME) return true;
+  return /\.(mp4|m4v)$/i.test(file.name);
+}
+
+async function probeMp4VideoTrack(
+  file: File,
+  signal?: AbortSignal,
+): Promise<Mp4VideoTrackProbe | null> {
+  const { createFile, DataStream, Endianness } = await import("mp4box");
+
+  function toUint8Array(
+    description: AllowSharedBufferSource,
+  ): Uint8Array<ArrayBufferLike> {
+    if (description instanceof Uint8Array) return description;
+    if (description instanceof ArrayBuffer) return new Uint8Array(description);
+    if (
+      typeof SharedArrayBuffer !== "undefined" &&
+      description instanceof SharedArrayBuffer
+    ) {
+      return new Uint8Array(description);
+    }
+    const view = description as ArrayBufferView;
+    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+  }
+
+  function getVideoDecoderDescription(
+    mp4boxFile: { getTrackById?: (id: number) => unknown },
+    trackId: number,
+  ): Uint8Array | undefined {
+    const trak = mp4boxFile.getTrackById?.(trackId) as
+      | {
+          mdia?: {
+            minf?: { stbl?: { stsd?: { entries?: unknown[] } } };
+          };
+        }
+      | undefined;
+    const entries = trak?.mdia?.minf?.stbl?.stsd?.entries;
+    if (!Array.isArray(entries)) return undefined;
+
+    for (const entry of entries) {
+      const e = entry as {
+        avcC?: { write?: (s: unknown) => void; hdr_size?: number };
+        hvcC?: { write?: (s: unknown) => void; hdr_size?: number };
+        vpcC?: { write?: (s: unknown) => void; hdr_size?: number };
+        av1C?: { write?: (s: unknown) => void; hdr_size?: number };
+      };
+      const box = e.avcC ?? e.hvcC ?? e.vpcC ?? e.av1C;
+      if (!box?.write) continue;
+
+      const stream = new DataStream(undefined, 0, Endianness.BIG_ENDIAN);
+      box.write(stream);
+      const headerSize = typeof box.hdr_size === "number" ? box.hdr_size : 8;
+      return new Uint8Array(stream.buffer, headerSize);
+    }
+
+    return undefined;
+  }
+
+  const mp4box = createFile();
+  let settled = false;
+
+  const result = new Promise<Mp4VideoTrackProbe | null>((resolve) => {
+    const finish = (value: Mp4VideoTrackProbe | null) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
+    mp4box.onError = () => finish(null);
+    mp4box.onReady = (
+      info: {
+        videoTracks?: Array<{
+          id: number;
+          codec: string;
+          track_width: number;
+          track_height: number;
+          description?: AllowSharedBufferSource;
+        }>;
+      },
+    ) => {
+      const videoTrack = info.videoTracks?.[0];
+      if (!videoTrack) {
+        finish(null);
+        return;
+      }
+      finish({
+        codec: videoTrack.codec,
+        width: videoTrack.track_width,
+        height: videoTrack.track_height,
+        description:
+          (videoTrack.description
+            ? toUint8Array(videoTrack.description)
+            : undefined) ??
+          getVideoDecoderDescription(
+            mp4box as { getTrackById?: (id: number) => unknown },
+            videoTrack.id,
+          ),
+      });
+    };
+  });
+
+  const reader = file.stream().getReader();
+  let offset = 0;
+
+  try {
+    while (!settled) {
+      throwIfAborted(signal);
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value.slice();
+      const buffer = chunk.buffer as ArrayBuffer & { fileStart: number };
+      buffer.fileStart = offset;
+      mp4box.appendBuffer(buffer);
+      offset += chunk.byteLength;
+    }
+    if (!settled) {
+      (mp4box as { flush?: () => void }).flush?.();
+    }
+    if (!settled) {
+      return null;
+    }
+    return await result;
+  } catch (error) {
+    await reader.cancel(error);
+    if ((error as Error).name === "AbortError") throw error;
+    return null;
+  } finally {
+    reader.releaseLock();
   }
 }
 
