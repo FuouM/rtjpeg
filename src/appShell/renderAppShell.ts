@@ -79,12 +79,12 @@ export function renderAppShell(): void {
             class="max-sm:flex max-sm:min-w-0 max-sm:w-full max-sm:flex-row max-sm:flex-wrap max-sm:items-center max-sm:gap-x-2 sm:contents">
             <div
               class="flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono font-black uppercase tracking-[0.14em] text-[7px] max-sm:gap-x-2 max-sm:text-[10px] max-sm:justify-start sm:justify-end sm:text-[8px]">
-              <a href="https://github.com/YOUR_ORG/rtjpeg" target="_blank" rel="noopener noreferrer"
+              <a href="https://github.com/FuouM/rtjpeg" target="_blank" rel="noopener noreferrer"
                 class="text-black dark:text-white underline decoration-1 underline-offset-2 decoration-highlight transition-colors hover:text-highlight dark:hover:text-highlight max-sm:inline-flex max-sm:items-center max-sm:justify-start max-sm:py-0.5 max-sm:decoration-2">
                 GitHub
               </a>
               <span class="text-subtitle max-sm:hidden select-none" aria-hidden="true">&middot;</span>
-              <a href="https://github.com/YOUR_ORG/rtjpeg/issues" target="_blank" rel="noopener noreferrer"
+              <a href="https://github.com/FuouM/rtjpeg/issues" target="_blank" rel="noopener noreferrer"
                 class="text-black dark:text-white underline decoration-1 underline-offset-2 decoration-highlight transition-colors hover:text-highlight dark:hover:text-highlight max-sm:inline-flex max-sm:items-center max-sm:justify-center max-sm:px-1 max-sm:py-0.5 max-sm:decoration-2">
                 Issues
               </a>
