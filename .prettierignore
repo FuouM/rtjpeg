@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-ssr
+package-lock.json
+*.mp4
+coverage
+.pnpm-store

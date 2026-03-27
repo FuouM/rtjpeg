@@ -1,0 +1,182 @@
+import type {
+  RangeControlConfig,
+  SelectControlConfig,
+  ToggleControlConfig,
+} from "./types";
+
+export const encodeRangeControls: RangeControlConfig[] = [
+  {
+    id: "quality-slider",
+    labelHtml: "Quality",
+    valueId: "quality-val",
+    valueText: "10",
+    valueSuffixHtml: "%",
+    min: "1",
+    max: "100",
+    value: "10",
+    helpTitle: "JPEG compression intensity (1-100)",
+    helpAriaLabel: "JPEG quality factor",
+  },
+  {
+    id: "scale-slider",
+    labelHtml: "Resolution",
+    valueId: "scale-val",
+    valueText: "2",
+    valueSuffixHtml: "&times;",
+    min: "0",
+    max: "4",
+    value: "1",
+    step: "1",
+    helpTitle: "Internal processing & output resolution scale",
+    helpAriaLabel: "Output resolution scale",
+  },
+  {
+    id: "ringing-slider",
+    labelHtml: "Ringing",
+    valueId: "ringing-val",
+    valueText: "1.0",
+    valueSuffixHtml: "&times;",
+    min: "1",
+    max: "10",
+    value: "1",
+    step: "0.1",
+    helpTitle:
+      "Inverse DCT ringing: scales random AC coefficient jitter (higher = sharper artifacts).",
+    helpAriaLabel: "Ringing: inverse DCT AC jitter multiplier",
+  },
+];
+
+export const damageRangeControls: RangeControlConfig[] = [
+  {
+    id: "glitch-slider",
+    labelHtml: "Dropout",
+    valueId: "glitch-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Randomly drop 16x16 macroblocks (classic glitch).",
+    helpAriaLabel: "Block glitch: random blocks zero AC DCT and randomize DC",
+  },
+  {
+    id: "mosh-slider",
+    labelHtml: "HS-Block",
+    valueId: "mosh-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle:
+      "Horn-Schunck-style temporal smear: blocks pull from the previous output along estimated motion.",
+    helpAriaLabel: "HS-Block: Horn-Schunck temporal smear from previous frame",
+  },
+  {
+    id: "corrupt-slider",
+    labelHtml: "Chaos",
+    valueId: "corrupt-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Randomly corrupt DCT frequency coefficients.",
+    helpAriaLabel: "Data corrupt: random DCT coefficient damage",
+  },
+  {
+    id: "chroma-bleed-slider",
+    labelHtml: "Color Bleed",
+    valueId: "chroma-bleed-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Spatially offset color channels (chromatic aberration).",
+    helpAriaLabel:
+      "Chroma bleed: Cb and Cr spatially offset like chromatic aberration",
+  },
+  {
+    id: "bit-crush-slider",
+    labelHtml: "Posterize",
+    valueId: "bit-crush-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Reduce bit depth of frequency data for harsh quantization.",
+    helpAriaLabel: "Bit crush: quantize DCT coefficient precision",
+  },
+  {
+    id: "echo-slider",
+    labelHtml: "Feedback",
+    valueId: "echo-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Blend previous output frames (ghost / feedback echo).",
+    helpAriaLabel: "Block echo: random blocks hold previous output",
+  },
+
+  {
+    id: "dc-step-slider",
+    labelHtml: "DC Step",
+    valueId: "dc-step-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle:
+      "DC Stepping: quantize only the DC brightness coefficient to create flat banded lighting with sharp details.",
+    helpAriaLabel: "DC Step: Stepped banding in DC coefficients",
+  },
+  {
+    id: "phase-shift-slider",
+    labelHtml: "Phase Shift",
+    valueId: "phase-shift-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle:
+      "Audio-style coefficient phase shift (Sine wave math on DCT array).",
+    helpAriaLabel:
+      "Phase Shift: Audacity style sine wave across frequency bins",
+  },
+];
+
+export const chromaControl: SelectControlConfig = {
+  id: "chroma-select",
+  label: "Subsampling",
+  helpTitle:
+    "Color resolution vs luma (4:4:4 full, 4:2:0 half res, Grayscale).",
+  helpAriaLabel: "Chroma subsampling: Cb and Cr resolution versus luma",
+  options: [
+    { value: "0", label: "4:4:4 full" },
+    { value: "1", label: "4:2:2 half W" },
+    { value: "2", label: "4:2:0 half res", selected: true },
+    { value: "3", label: "Grayscale" },
+  ],
+};
+
+export const toggleControls: ToggleControlConfig[] = [
+  {
+    id: "drift-toggle",
+    label: "Color Drift",
+    helpTitle: "Toggle between BT.601/BT.709 color space drift",
+    helpAriaLabel: "YCbCr channel drift",
+  },
+  {
+    id: "echo-before-toggle",
+    label: "Feedback Pre-Pass",
+    helpTitle: "Apply feedback before compression for recursive artifacts.",
+    helpAriaLabel:
+      "Echo before JPEG: when on, echo is blended into the pipeline before JPEG",
+  },
+];

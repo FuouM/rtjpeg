@@ -1,0 +1,49 @@
+{
+  "name": "rtjpeg",
+  "private": true,
+  "version": "0.5.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint ."
+  },
+  "overrides": {
+    "glob": "^13.0.6",
+    "magic-string": "^0.30.21",
+    "serialize-javascript": "^7.0.4",
+    "source-map": "^0.7.6",
+    "brace-expansion": "^5.0.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "@types/qrcode": "^1.5.6",
+    "@webgpu/types": "^0.1.69",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^10.1.0",
+    "postcss": "^8.4.32",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^3.3.6",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.2",
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-window": "^7.4.0"
+  },
+  "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "@fontsource/archivo-black": "^5.2.8",
+    "@fontsource/oswald": "^5.2.8",
+    "@fontsource/roboto-mono": "^5.2.8",
+    "fix-webm-duration": "^1.0.6",
+    "mediabunny": "^1.40.1",
+    "mp4box": "^2.3.0",
+    "qrcode": "^1.5.4"
+  }
+}

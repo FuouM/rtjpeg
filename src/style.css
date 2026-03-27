@@ -1,0 +1,840 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* * Semantic colors: readable on light (dark shades) and dark (bright) themes */
+:root {
+  --color-accent: #15803d;
+  --color-accentDown: #b91c1c;
+  --color-highlight: #a16207;
+  --color-subtitle: #666666;
+}
+
+html.dark {
+  --color-accent: #00ff00;
+  --color-accentDown: #ff0000;
+  --color-highlight: #ffff00;
+  --color-subtitle: #999999;
+}
+
+html {
+  background: #e8e8e8;
+}
+
+html.dark {
+  background: #000000;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: "Roboto Mono", monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: inherit;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+  .param-help {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.6875rem;
+  }
+}
+
+/* * Brutalist concrete texture overlay */
+@keyframes noise {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  10% {
+    transform: translate(-5%, -5%);
+  }
+
+  20% {
+    transform: translate(-10%, 5%);
+  }
+
+  30% {
+    transform: translate(5%, -10%);
+  }
+
+  40% {
+    transform: translate(-5%, 15%);
+  }
+
+  50% {
+    transform: translate(-10%, 5%);
+  }
+
+  60% {
+    transform: translate(15%, 0);
+  }
+
+  70% {
+    transform: translate(0, 10%);
+  }
+
+  80% {
+    transform: translate(-15%, 0);
+  }
+
+  90% {
+    transform: translate(10%, 5%);
+  }
+}
+
+.concrete-texture {
+  position: relative;
+  overflow: hidden;
+}
+
+.concrete-texture::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    );
+  opacity: 0.4;
+  pointer-events: none;
+  animation: noise 0.2s infinite;
+  z-index: -1;
+}
+
+html.dark .concrete-texture::before {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.02) 2px,
+      rgba(255, 255, 255, 0.02) 4px
+    );
+}
+
+/* * Brutalist button press effect */
+@keyframes brutal-press {
+  0% {
+    transform: translate(0, 0);
+    box-shadow: 2px 2px 0 currentColor;
+  }
+
+  100% {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 currentColor;
+  }
+}
+
+.brutal-btn {
+  box-shadow: 2px 2px 0 currentColor;
+  transition: background-color 0.1s;
+}
+
+.brutal-btn:active {
+  animation: brutal-press 0.08s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes frame-action-success {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.frame-action-btn.frame-action-flash-success {
+  animation: frame-action-success 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
+  background-color: #2eff46 !important;
+  color: #000 !important;
+  border-color: #000 !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+
+html.dark .frame-action-btn.frame-action-flash-success {
+  border-color: #fff !important;
+  box-shadow: 2px 2px 0 #fff !important;
+}
+
+/* * Heavy shadow for depth */
+.brutal-shadow {
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);
+}
+
+html.dark .brutal-shadow {
+  box-shadow: 8px 8px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* * Oswald font for logo */
+.font-oswald {
+  font-family: "Oswald", sans-serif;
+}
+
+/* Base styles for WebGPU canvas (in-flow flex item: flex-1 + min-h-0 in markup; avoid height:100% vs abspos collapse on narrow viewports) */
+#output-canvas {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-shrink: 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+input[type="range"]:not(.comparison-slider)::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 12px;
+  background: var(--color-accent);
+  border: 2px solid #fff;
+  cursor: pointer;
+  margin-top: -8px;
+  box-sizing: border-box;
+}
+
+html:not(.dark)
+  input[type="range"]:not(.comparison-slider)::-webkit-slider-thumb {
+  border: 2px solid #000;
+}
+
+input[type="range"]:not(.comparison-slider)::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: #333;
+  border: 1px solid #111;
+}
+
+html:not(.dark)
+  input[type="range"]:not(.comparison-slider)::-webkit-slider-runnable-track {
+  background: #ccc;
+  border: 1px solid #999;
+}
+
+#seek-slider::-webkit-slider-runnable-track {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+/* Help “?” — larger hit target; copy is shown in #param-help-tooltip (fixed, see main.ts) */
+.param-help {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  min-height: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  padding: 0;
+  margin: 0;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.5625rem;
+  font-weight: 900;
+  line-height: 1;
+  color: inherit;
+  border: 2px solid currentColor;
+  background: transparent;
+  cursor: help;
+  flex-shrink: 0;
+  vertical-align: baseline;
+}
+
+#param-help-tooltip {
+  position: fixed;
+  z-index: 99999;
+  display: none;
+  box-sizing: border-box;
+  max-width: min(280px, calc(100vw - 20px));
+  padding: 0.45rem 0.55rem;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  color: #fff;
+  background: #000;
+  border: 2px solid #fff;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+
+html.dark #param-help-tooltip {
+  color: #000;
+  background: #fff;
+  border-color: #000;
+}
+
+.param-help:hover,
+.param-help:focus-visible {
+  outline: none;
+  background: #000;
+  color: #fff;
+}
+
+html.dark .param-help:hover,
+html.dark .param-help:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+/* Header: JPEG segment — subtle chromatic split + occasional glitch bursts */
+.title-jpeg-glitch {
+  position: relative;
+  display: inline-block;
+  text-shadow:
+    0.06em 0 rgba(255, 0, 136, 0.55),
+    -0.06em 0 rgba(0, 240, 255, 0.5);
+  animation: title-jpeg-glitch-burst 5.8s infinite steps(1, end);
+}
+
+@keyframes title-jpeg-glitch-burst {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0) skewX(0);
+    clip-path: inset(0 0 0 0);
+    text-shadow:
+      0.06em 0 rgba(255, 0, 136, 0.55),
+      -0.06em 0 rgba(0, 240, 255, 0.5);
+  }
+
+  87% {
+    transform: translate(-2px, 0) skewX(-4deg);
+    text-shadow:
+      3px 0 rgba(255, 0, 136, 0.9),
+      -3px 0 rgba(0, 240, 255, 0.85),
+      0 1px rgba(255, 255, 0, 0.4);
+  }
+
+  88% {
+    transform: translate(3px, 1px) skewX(5deg);
+    text-shadow:
+      -4px 0 rgba(255, 0, 136, 0.95),
+      2px 0 rgba(0, 240, 255, 0.9);
+  }
+
+  89% {
+    transform: translate(0, 0) skewX(0);
+    clip-path: inset(8% 0 78% 0);
+    text-shadow: none;
+  }
+
+  90% {
+    clip-path: inset(58% 0 22% 0);
+    text-shadow:
+      2px 0 rgba(255, 0, 136, 0.8),
+      -2px 0 rgba(0, 240, 255, 0.75);
+  }
+
+  91% {
+    clip-path: inset(0 0 0 0);
+    text-shadow:
+      0.06em 0 rgba(255, 0, 136, 0.55),
+      -0.06em 0 rgba(0, 240, 255, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-jpeg-glitch {
+    animation: none;
+    text-shadow:
+      0.05em 0 rgba(255, 0, 136, 0.35),
+      -0.05em 0 rgba(0, 240, 255, 0.32);
+  }
+}
+
+/* Compact param sidebar: same brutal borders / accent, denser controls */
+.param-panel .param-input,
+.param-panel .param-file,
+.app-top-header .param-file {
+  padding: 0.25rem 0.375rem;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+}
+
+.param-panel .param-file::file-selector-button,
+.app-top-header .param-file::file-selector-button {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 0.5rem;
+  padding: 0.2rem 0.4rem;
+  border: 2px solid currentColor;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+
+html:not(.dark) .param-panel .param-file::file-selector-button,
+html:not(.dark) .app-top-header .param-file::file-selector-button {
+  background: #000;
+  color: #fff;
+}
+
+html.dark .param-panel .param-file::file-selector-button,
+html.dark .app-top-header .param-file::file-selector-button {
+  background: #fff;
+  color: #000;
+}
+
+/* Explicit box + centered track so thumbs never paint into the label row above */
+.param-panel input[type="range"].param-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  height: 26px;
+  margin: -3px 0 0;
+  background: transparent;
+}
+
+.param-panel input[type="range"].param-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 10px;
+  margin-top: -5px;
+  background: var(--color-accent);
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+html:not(.dark)
+  .param-panel
+  input[type="range"].param-range::-webkit-slider-thumb {
+  border: 2px solid #000;
+}
+
+.param-panel input[type="range"].param-range::-webkit-slider-runnable-track {
+  height: 6px;
+  margin-top: 10px;
+}
+
+.param-panel input[type="range"].param-range::-moz-range-thumb {
+  height: 16px;
+  width: 10px;
+  background: var(--color-accent);
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+html:not(.dark) .param-panel input[type="range"].param-range::-moz-range-thumb {
+  border: 2px solid #000;
+}
+
+.param-panel input[type="range"].param-range::-moz-range-track {
+  height: 6px;
+  background: #333;
+  border: 1px solid #111;
+}
+
+html:not(.dark) .param-panel input[type="range"].param-range::-moz-range-track {
+  background: #ccc;
+  border: 1px solid #999;
+}
+
+/* Widescreen main grid: three layout modes (see widescreenSidebarLayout.ts) */
+@media (min-width: 1024px) {
+  #app-main[data-ws-layout="split"] {
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 200px);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  #app-main[data-ws-layout="split"] #viewer-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="split"] #controls-panel-aside {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="split"] #flow-panel-aside {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  /* Parameters + flow side-by-side on one side of the viewer (single row). */
+  #app-main[data-ws-layout="both-left"] {
+    grid-template-columns: minmax(0, 220px) minmax(0, 200px) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  #app-main[data-ws-layout="both-left"] #controls-panel-aside {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="both-left"] #flow-panel-aside {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="both-left"] #viewer-panel {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="both-right"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 220px) minmax(0, 200px);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  #app-main[data-ws-layout="both-right"] #viewer-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="both-right"] #controls-panel-aside {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #app-main[data-ws-layout="both-right"] #flow-panel-aside {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  /* Shorter sliders so left/right columns fit in one viewport without scrolling */
+  .param-panel input[type="range"].param-range {
+    height: 20px;
+    margin: -2px 0 0;
+  }
+
+  .param-panel input[type="range"].param-range::-webkit-slider-thumb {
+    height: 14px;
+    width: 9px;
+    margin-top: -4px;
+  }
+
+  .param-panel input[type="range"].param-range::-webkit-slider-runnable-track {
+    height: 5px;
+    margin-top: 7px;
+  }
+
+  .param-panel input[type="range"].param-range::-moz-range-thumb {
+    height: 14px;
+    width: 9px;
+  }
+
+  .param-panel input[type="range"].param-range::-moz-range-track {
+    height: 5px;
+  }
+}
+
+/* Live export picker: give scrollIntoView a little slack past the last control */
+#live-export-picker {
+  scroll-margin-bottom: 12px;
+}
+
+.preset-textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+#preset-qr-image {
+  image-rendering: pixelated;
+}
+
+#welcome-upload-dropzone.video-upload-drag-over {
+  border-color: #2eff46;
+  border-style: solid;
+  background-color: rgba(46, 255, 70, 0.12);
+}
+
+/* Drag-over: brutal-btn's 2px offset shadow was stacking on top of the green ring — clear it and draw one border on the input. */
+#header-video-upload-dropzone.video-upload-drag-over {
+  background-color: rgba(46, 255, 70, 0.08);
+}
+
+#header-video-upload-dropzone.video-upload-drag-over .param-file {
+  box-shadow: none;
+  border-color: #2eff46 !important;
+}
+
+/* Viewer: source vs processed comparison (Output / Side / Slide) */
+.viewer-comparison-root {
+  --compare-split: 50%;
+}
+
+#viewer-comparison-root[data-comparison="off"] .comparison-source-wrap {
+  display: none;
+}
+
+#viewer-comparison-root[data-comparison="off"] .comparison-output-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+#viewer-comparison-root[data-comparison="sideBySide"] {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+#viewer-comparison-root[data-comparison="sideBySide"] .comparison-source-wrap {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  border-right: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+#viewer-comparison-root[data-comparison="sideBySide"] .comparison-output-wrap {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+#viewer-comparison-root[data-comparison="sliding"] {
+  position: relative;
+}
+
+#viewer-comparison-root[data-comparison="sliding"] .comparison-source-wrap {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+#viewer-comparison-root[data-comparison="sliding"] .comparison-output-wrap {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  flex: none;
+  width: 100%;
+  height: 100%;
+}
+
+#viewer-comparison-root[data-comparison="sliding"] .comparison-slide-divider {
+  left: var(--compare-split, 50%);
+  transform: translateX(-50%);
+}
+
+/* Custom range so thumb size matches COMPARISON_SLIDER_THUMB_PX in comparisonController.ts */
+.comparison-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  height: 22px;
+  margin: 0;
+  cursor: pointer;
+  background: transparent;
+  /* Avoid UA / accent-color tint (excluded from global input[type=range] green thumb rules above). */
+  accent-color: #fff;
+}
+
+/* Filled diamond: border + transparent fill under clip-path reads as 4 corner slivers in WebKit. */
+.comparison-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border: none;
+  border-radius: 0;
+  background-color: #fff;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.comparison-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 2px;
+}
+
+.comparison-slider::-moz-range-thumb {
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 0;
+  background-color: #fff;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.comparison-slider::-moz-range-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 2px;
+}
+
+.global-error-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.global-error-dialog.hidden,
+.pwa-status-toast.hidden {
+  display: none;
+}
+
+.global-error-panel {
+  width: min(42rem, 100%);
+  max-height: min(85vh, 42rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow: hidden;
+  padding: 1rem;
+  border: 4px solid #000;
+  background: #f5f5f5;
+  color: #000;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);
+}
+
+html.dark .global-error-panel {
+  border-color: #fff;
+  background: #000;
+  color: #fff;
+  box-shadow: 8px 8px 0 rgba(255, 255, 255, 0.14);
+}
+
+.global-error-title,
+.pwa-status-title {
+  margin: 0;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.global-error-summary,
+.global-error-body,
+.pwa-status-body {
+  margin: 0;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.global-error-summary {
+  color: var(--color-accentDown);
+  font-weight: 700;
+}
+
+.global-error-report {
+  width: 100%;
+  min-height: 14rem;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  padding: 0.75rem;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+html.dark .global-error-report {
+  border-color: #fff;
+  background: #111;
+  color: #fff;
+}
+
+.global-error-actions,
+.pwa-status-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.global-error-button,
+.pwa-status-button {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: 2px solid #000;
+  background: #000;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 currentColor;
+}
+
+html.dark .global-error-button,
+html.dark .pwa-status-button {
+  border-color: #fff;
+  background: #fff;
+  color: #000;
+}
+
+.pwa-status-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9990;
+  width: min(24rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.85rem 0.95rem;
+  border: 4px solid #000;
+  background: #f5f5f5;
+  color: #000;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);
+}
+
+html.dark .pwa-status-toast {
+  border-color: #fff;
+  background: #000;
+  color: #fff;
+  box-shadow: 8px 8px 0 rgba(255, 255, 255, 0.14);
+}

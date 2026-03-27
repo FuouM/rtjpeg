@@ -1,0 +1,83 @@
+# GitHub Pages (free): Settings → Pages → Source = GitHub Actions.
+# For a user site (repo named <user>.github.io), the build uses base URL / automatically.
+# Runs only when package.json "version" is bumped on the pushed commits (vs pre-push state).
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "package.json"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    outputs:
+      bumped: ${{ steps.check.outputs.bumped }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        run: |
+          set -e
+          curr=$(node -p "require('./package.json').version")
+          before="${{ github.event.before }}"
+          if [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          prev=$(git show "${before}:package.json" 2>/dev/null | node -e "
+            let d = '';
+            process.stdin.on('data', (c) => (d += c));
+            process.stdin.on('end', () => {
+              try { console.log(JSON.parse(d).version); } catch { process.exit(1); }
+            });
+          " || true)
+          if [ -z "$prev" ]; then
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$curr" != "$prev" ]; then
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: version-check
+    if: needs.version-check.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: [version-check, build]
+    if: needs.version-check.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
