@@ -270,13 +270,18 @@ export function createRenderLoop(deps: RenderLoopDeps) {
 
       if (shouldCaptureLiveFrame) {
         if (!sourceVideo.paused && sourceVideo.playbackRate > 0) {
-          const mediaTimeForStats = deps.livePlaybackCacheTime();
+          // Prefer RVFC mediaTime (see sync above); currentTime can disagree with the presented frame.
+          const mediaTimeForStats = deps.isImageSource()
+            ? deps.livePlaybackCacheTime()
+            : playbackTiming.lastMediaTime;
           if (m.fpsMediaAnchor === null) m.fpsMediaAnchor = mediaTimeForStats;
           m.fpsMediaLast = mediaTimeForStats;
           m.fpsMediaFrameCount += 1;
         }
 
-        const t = deps.livePlaybackCacheTime();
+        const t = deps.isImageSource()
+          ? deps.livePlaybackCacheTime()
+          : playbackTiming.lastMediaTime;
         const slot = frameCache.uniformFrameSlotAtTime(t);
         const shouldInsertSparseFrame =
           frameCache.shouldPrecacheSlot(slot, sourceWidth, sourceHeight) &&
