@@ -1095,17 +1095,31 @@ window.addEventListener("blur", clearFrameStepHold);
 setupFrameStepButtonHold(frameStepPrevBtn, -1);
 setupFrameStepButtonHold(frameStepNextBtn, 1);
 
+function isFrameStepPrevKey(event: KeyboardEvent): boolean {
+  if (event.key === "ArrowLeft") return true;
+  if (event.key === "<") return true;
+  if (event.key === ",") return true;
+  return false;
+}
+
+function isFrameStepNextKey(event: KeyboardEvent): boolean {
+  if (event.key === "ArrowRight") return true;
+  if (event.key === ">") return true;
+  if (event.key === ".") return true;
+  return false;
+}
+
 window.addEventListener("keydown", (event) => {
-  const prevKey = event.key === "<" || event.key === "ArrowLeft";
-  const nextKey = event.key === ">" || event.key === "ArrowRight";
-  if (!prevKey && !nextKey) return;
+  const prev = isFrameStepPrevKey(event);
+  const next = isFrameStepNextKey(event);
+  if (!prev && !next) return;
   if (frameStepTargetIsEditable(event.target)) return;
   if (!changelogModal.classList.contains("hidden")) return;
   if (!presetModal.classList.contains("hidden")) return;
   if (!welcomeSampleOverlay.classList.contains("hidden")) return;
   if (liveExportPicker.getAttribute("aria-hidden") === "false") return;
   event.preventDefault();
-  applyFrameStep(prevKey ? -1 : 1);
+  applyFrameStep(prev ? -1 : 1);
 });
 
 requestAnimationFrame(() => {

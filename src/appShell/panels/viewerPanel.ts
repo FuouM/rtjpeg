@@ -106,16 +106,16 @@ export function renderViewerPanel(): string {
                 aria-label="Frame step">
                 <button type="button" id="frame-step-prev-btn"
                   class="${FRAME_STEP_BUTTON_CLASS}"
-                  title="Previous frame (← or &lt;)"
-                  aria-label="Previous frame, Left arrow or less-than key">
+                  title="Previous frame (← or ,)"
+                  aria-label="Previous frame, Left arrow or comma key">
                   <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" class="bi bi-chevron-left block h-[11px] w-[11px] shrink-0" viewBox="0 0 16 16" aria-hidden="true">
                     <path fill-rule="evenodd" fill="currentColor" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
                   </svg>
                 </button>
                 <button type="button" id="frame-step-next-btn"
                   class="${FRAME_STEP_BUTTON_CLASS}"
-                  title="Next frame (→ or &gt;)"
-                  aria-label="Next frame, Right arrow or greater-than key">
+                  title="Next frame (→ or .)"
+                  aria-label="Next frame, Right arrow or period key">
                   <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" class="bi bi-chevron-right block h-[11px] w-[11px] shrink-0" viewBox="0 0 16 16" aria-hidden="true">
                     <path fill-rule="evenodd" fill="currentColor" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
                   </svg>
