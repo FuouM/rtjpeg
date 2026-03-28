@@ -75,7 +75,7 @@ export function renderFlowPanel(): string {
             </div>
             <div class="flex flex-col gap-1.5 shrink-0 pt-2 border-t-2 border-black dark:border-white lg:pt-1 lg:gap-1">
               ${renderSectionLabel("Output", "pb-0.5")}
-              <p class="font-mono text-[8px] text-subtitle leading-snug lg:text-[7px] lg:leading-tight">
+              <p class="font-mono text-[11px] text-subtitle leading-snug lg:text-[10px] lg:leading-tight">
                 <span class="font-black text-black dark:text-white">Live rec</span>
                 - records the GPU preview in real time with a locked export size so the file stays stable.
                 <span class="block mt-1.5 lg:mt-0.5">
@@ -95,7 +95,7 @@ export function renderFlowPanel(): string {
               <div id="live-export-picker" class="hidden flex flex-col gap-2 pt-2 mt-2 border-t-2 border-black dark:border-white"
                 aria-hidden="true">
                 ${renderSectionLabel("Live export format", "pb-0")}
-                <p class="font-mono text-[7px] text-subtitle leading-snug">
+                <p class="font-mono text-[10px] text-subtitle leading-snug">
                   Resolution locks when recording starts; params can change mid-take without resizing the file.
                 </p>
                 <p id="live-export-picker-size"
