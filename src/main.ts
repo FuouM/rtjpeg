@@ -69,6 +69,7 @@ const useCanvasVideoSource = shouldWarmVideoTranscoder();
 const appDom = queryAppDom();
 const {
   sourceVideo,
+  comparisonSourceImg,
   outputCanvas,
   resetParamsBtn,
   presetChooser,
@@ -166,6 +167,8 @@ const { getGpuContext, ensureGpuReady, writeParamsBuffer } = setupGpuController(
 
 const { updateCanvasSize, resizeCanvasToVideo } = setupCanvasController({
   outputCanvas,
+  comparisonSourceVideo: sourceVideo,
+  comparisonSourceImg,
   activeSourceWidth: () => activeSourceWidth(),
   activeSourceHeight: () => activeSourceHeight(),
   getGpuContext,

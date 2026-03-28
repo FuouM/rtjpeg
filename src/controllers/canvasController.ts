@@ -2,6 +2,9 @@ import type { GpuContext } from "../gpu/gpuContext";
 
 export interface CanvasControllerDeps {
   outputCanvas: HTMLCanvasElement;
+  /** Kept in sync with canvas display size so compare modes (especially slide) align source and processed. */
+  comparisonSourceVideo: HTMLVideoElement;
+  comparisonSourceImg: HTMLImageElement;
   activeSourceWidth: () => number;
   activeSourceHeight: () => number;
   getGpuContext: () => GpuContext | null;
@@ -11,6 +14,8 @@ export interface CanvasControllerDeps {
 export function setupCanvasController(deps: CanvasControllerDeps) {
   const {
     outputCanvas,
+    comparisonSourceVideo,
+    comparisonSourceImg,
     activeSourceWidth,
     activeSourceHeight,
     getGpuContext,
@@ -54,6 +59,20 @@ export function setupCanvasController(deps: CanvasControllerDeps) {
     outputCanvas.style.flex = "0 0 auto";
     outputCanvas.style.margin = "auto";
     outputCanvas.style.alignSelf = "center";
+
+    const syncCompareSource = (el: HTMLElement) => {
+      el.style.width = `${displayWidth}px`;
+      el.style.height = `${displayHeight}px`;
+      el.style.maxWidth = "100%";
+      el.style.maxHeight = `${Math.max(1, Math.round(maxDisplayHeight))}px`;
+      el.style.objectFit = "contain";
+      el.style.aspectRatio = `${width} / ${height}`;
+      el.style.flex = "0 0 auto";
+      el.style.margin = "auto";
+      el.style.alignSelf = "center";
+    };
+    syncCompareSource(comparisonSourceVideo);
+    syncCompareSource(comparisonSourceImg);
   }
 
   function updateCanvasSize(targetWidth: number, targetHeight: number) {
