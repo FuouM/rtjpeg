@@ -29,7 +29,7 @@ export function renderAppShell(): void {
       <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pl-2.5 pr-0.5 max-lg:gap-x-1.5 max-lg:gap-y-0.5 max-lg:pl-2 max-lg:pr-0.5 lg:flex-nowrap">
         <div class="flex flex-wrap items-center gap-1.5 shrink-0 max-lg:gap-1 min-w-0 lg:flex-nowrap">
           <h1 class="font-oswald text-lg tracking-normal uppercase leading-tight lg:text-3xl lg:tracking-tighter lg:leading-none shrink-0 whitespace-nowrap overflow-visible">
-            <span style="color: #2eff46">RT</span><span class="title-jpeg-glitch">_JPEG</span>
+            <span style="color: #2eff46">RT</span><span class="title-jpeg-glitch-underscore">_</span><span class="title-jpeg-glitch">JPEG</span>
           </h1>
           <div class="hidden sm:flex flex-col gap-0 leading-none shrink-0" role="group" aria-label="Runtime">
             <span class="font-mono text-[9px] font-black uppercase tracking-[0.12em] text-black dark:text-muted">WebGPU</span>

@@ -315,7 +315,16 @@ html.dark .param-help:focus-visible {
   color: #000;
 }
 
-/* Header: JPEG segment — subtle chromatic split + occasional glitch bursts */
+/* Header: underscore stays outside clip-path glitch so it is never sliced away */
+.title-jpeg-glitch-underscore {
+  position: relative;
+  display: inline-block;
+  text-shadow:
+    0.06em 0 rgba(255, 0, 136, 0.55),
+    -0.06em 0 rgba(0, 240, 255, 0.5);
+}
+
+/* JPEG segment — subtle chromatic split + occasional glitch bursts */
 .title-jpeg-glitch {
   position: relative;
   display: inline-block;
@@ -373,6 +382,7 @@ html.dark .param-help:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .title-jpeg-glitch-underscore,
   .title-jpeg-glitch {
     animation: none;
     text-shadow:
