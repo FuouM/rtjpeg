@@ -809,6 +809,8 @@ const { render, scheduleNextFrame, primePlaybackFrameLoop } = createRenderLoop({
       echoBeforeJpeg: engineState.echoBeforeJpeg,
       dcStep: engineState.dcStep,
       phaseShift: engineState.phaseShift,
+      invertDct: engineState.invertDct,
+      lockChroma: engineState.lockChroma,
     }),
   shouldUseProcessedFrameCache,
   hasTemporalFeedbackEffects,

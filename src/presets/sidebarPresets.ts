@@ -30,6 +30,8 @@ export interface SidebarPresetValues {
   seed: number;
   dcStep: number;
   phaseShift: number;
+  invertDct: boolean;
+  lockChroma: number;
 }
 
 export interface SidebarPresetRecord {
@@ -64,6 +66,8 @@ export const DEFAULT_SIDEBAR_PRESET_VALUES: SidebarPresetValues = {
   seed: -1,
   dcStep: 0,
   phaseShift: 0,
+  invertDct: false,
+  lockChroma: 0,
 };
 
 function clampInteger(value: unknown, min: number, max: number): number | null {
@@ -124,6 +128,8 @@ export function normalizeSidebarPresetValues(
   const echoBeforeJpeg = readBoolean(input.echoBeforeJpeg);
   const dcStep = clampInteger(input.dcStep, 0, 100);
   const phaseShift = clampInteger(input.phaseShift, 0, 100);
+  const invertDct = readBoolean(input.invertDct);
+  const lockChroma = clampInteger(input.lockChroma, 0, 100);
 
   const seedValue =
     typeof input.seed === "number" && Number.isFinite(input.seed)
@@ -146,6 +152,8 @@ export function normalizeSidebarPresetValues(
     echoBeforeJpeg === null ||
     dcStep === null ||
     phaseShift === null ||
+    invertDct === null ||
+    lockChroma === null ||
     seedValue === null
   ) {
     return null;
@@ -168,6 +176,8 @@ export function normalizeSidebarPresetValues(
     seed: seedValue,
     dcStep,
     phaseShift,
+    invertDct,
+    lockChroma,
   };
 }
 

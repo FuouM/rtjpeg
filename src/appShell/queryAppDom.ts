@@ -42,6 +42,9 @@ export interface AppDom {
   phaseShiftVal: HTMLSpanElement;
   echoBeforeToggle: HTMLInputElement;
   driftToggle: HTMLInputElement;
+  invertDctToggle: HTMLInputElement;
+  lockChromaSlider: HTMLInputElement;
+  lockChromaVal: HTMLSpanElement;
   resetParamsBtn: HTMLButtonElement;
   presetChooser: HTMLSelectElement;
   presetManageBtn: HTMLButtonElement;
@@ -225,5 +228,8 @@ export function queryAppDom(): AppDom {
     comparisonSideBtn: req("comparison-side-btn"),
     comparisonSlideBtn: req("comparison-slide-btn"),
     comparisonSourceImg: req("comparison-source-img"),
+    invertDctToggle: req("invert-dct-toggle"),
+    lockChromaSlider: req("lock-chroma-slider"),
+    lockChromaVal: req("lock-chroma-val"),
   };
 }

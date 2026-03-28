@@ -36,6 +36,8 @@ export function setupParameterController({
       dcStep: engineState.dcStep,
       phaseShift: engineState.phaseShift,
       seed: engineState.seed,
+      invertDct: engineState.invertDct === 1,
+      lockChroma: engineState.lockChroma,
     };
   }
 
@@ -99,8 +101,12 @@ export function setupParameterController({
     dom.phaseShiftSlider.value = String(values.phaseShift);
     dom.phaseShiftVal.textContent = String(values.phaseShift);
 
-    engineState.echoBeforeJpeg = values.echoBeforeJpeg ? 1 : 0;
-    dom.echoBeforeToggle.checked = values.echoBeforeJpeg;
+    engineState.invertDct = values.invertDct ? 1 : 0;
+    dom.invertDctToggle.checked = values.invertDct;
+
+    engineState.lockChroma = values.lockChroma;
+    dom.lockChromaSlider.value = String(values.lockChroma);
+    dom.lockChromaVal.textContent = String(values.lockChroma);
 
     engineState.seed = normalizeSeedValue(values.seed);
     dom.seedInput.value = String(engineState.seed);
@@ -207,6 +213,17 @@ export function setupParameterController({
     onParamsChanged(true);
   });
 
+  dom.invertDctToggle.addEventListener("change", (e) => {
+    engineState.invertDct = (e.target as HTMLInputElement).checked ? 1 : 0;
+    onParamsChanged(true);
+  });
+
+  dom.lockChromaSlider.addEventListener("input", (e) => {
+    engineState.lockChroma = parseInt((e.target as HTMLInputElement).value, 10);
+    dom.lockChromaVal.textContent = engineState.lockChroma.toString();
+    onParamsChanged(true);
+  });
+
   dom.seedInput.addEventListener("input", (e) => {
     const el = e.target as HTMLInputElement;
     const raw = el.value;
@@ -241,10 +258,10 @@ export function setupParameterController({
     { el: dom.corruptSlider, key: "corrupt", clearCache: false },
     { el: dom.ringingSlider, key: "ringing", clearCache: false },
     { el: dom.chromaBleedSlider, key: "chromaBleed", clearCache: true },
-    { el: dom.bitCrushSlider, key: "bitCrush", clearCache: true },
     { el: dom.echoSlider, key: "blockEcho", clearCache: true },
     { el: dom.dcStepSlider, key: "dcStep", clearCache: true },
     { el: dom.phaseShiftSlider, key: "phaseShift", clearCache: true },
+    { el: dom.lockChromaSlider, key: "lockChroma", clearCache: true },
   ];
 
   for (const { el, key, clearCache } of sliderDoubleClickDefaults) {

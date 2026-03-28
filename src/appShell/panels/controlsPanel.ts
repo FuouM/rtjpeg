@@ -27,6 +27,7 @@ export function renderControlsPanel(): string {
     renderDatamoshControl(),
     ...damageRangeControls.slice(2).map(renderRangeControl),
     renderToggleControl(toggleControls[1], "-mt-0.5"),
+    renderToggleControl(toggleControls[2], "-mt-0.5"),
   ].join("");
 
   return `

@@ -1,8 +1,8 @@
 /**
  * CPU packing for `@group(0) @binding(2) var<uniform> params: Params` in `jpeg_compute.wgsl`.
- * Layout mirrors WGSL comments (6×vec4 = 24 floats).
+ * Layout mirrors WGSL comments (7×vec4 = 28 floats).
  */
-export const PARAM_FLOAT_COUNT = 24;
+export const PARAM_FLOAT_COUNT = 28;
 
 /** Slider / UI values before normalization (matches `main` sidebar state). */
 export interface ParamUniformPackInput {
@@ -32,6 +32,8 @@ export interface ParamUniformPackInput {
   customFlowX: number;
   customFlowY: number;
   useCustomFlow: boolean;
+  invertDct: number; // 0 or 1
+  lockChroma: number; // 0 or 1
 }
 
 export interface FrameSeedInput {
@@ -79,6 +81,10 @@ export function packParamsFloats(
   out[21] = p.customFlowX;
   out[22] = p.customFlowY;
   out[23] = p.useCustomFlow ? 1.0 : 0.0;
+  out[24] = p.invertDct;
+  out[25] = p.lockChroma / 100.0;
+  out[26] = 0.0;
+  out[27] = 0.0;
 }
 
 /** Knobs that affect processed-cache validity (must stay in sync with pack + presets). */
@@ -98,6 +104,8 @@ export interface ParamsFingerprintKnobs {
   echoBeforeJpeg: number;
   dcStep: number;
   phaseShift: number;
+  invertDct: number;
+  lockChroma: number;
 }
 
 function hashNumber(hash: number, value: number): number {
@@ -120,5 +128,7 @@ export function paramsFingerprint(k: ParamsFingerprintKnobs): number {
   hash = hashNumber(hash, k.blockEcho);
   hash = hashNumber(hash, k.echoBeforeJpeg);
   hash = hashNumber(hash, k.dcStep);
-  return hashNumber(hash, k.phaseShift);
+  hash = hashNumber(hash, k.phaseShift);
+  hash = hashNumber(hash, k.invertDct);
+  return hashNumber(hash, k.lockChroma);
 }

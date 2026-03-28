@@ -14,6 +14,7 @@ struct Params {
   row3: vec4<f32>,
   row4: vec4<f32>,
   row5: vec4<f32>,
+  row6: vec4<f32>, // x: invert DCT, y: lock chroma table
 }
 
 @group(0) @binding(0) var inputTex: texture_external;
@@ -449,7 +450,9 @@ fn compute_main(
   }
   let lumaIdx = oy * 8u + ox;
   let qL = max(1.0, floor((Q_Luma[lumaIdx] * scale + 50.0) / 100.0));
-  dctY[y][x] = round((0.25 * au * av * sumY) / qL) * qL;
+  var coeffY = round((0.25 * au * av * sumY) / qL) * qL;
+  if (params.row6.x > 0.5 && (ox != 0u || oy != 0u)) { coeffY = -coeffY; }
+  dctY[y][x] = coeffY;
 
   // -----------------------------------------------------------------------
   // 3b. Forward DCT + quantise — chroma (shares fwd_cos with luma).
@@ -469,9 +472,20 @@ fn compute_main(
       }
     }
     let chromaIdx = oy * 8u + ox;
-    let qC = max(1.0, floor((Q_Chroma[chromaIdx] * scale + 50.0) / 100.0));
-    dctCb[y][x] = round((0.25 * au * av * sumCb_d) / qC) * qC;
-    dctCr[y][x] = round((0.25 * au * av * sumCr_d) / qC) * qC;
+    let baseQC = Q_Chroma[chromaIdx];
+    let lockAmt = params.row6.y;
+    let blockHashC = hash3(vec3<u32>(group_id.x, group_id.y, u32(params.row2.y) + 777u));
+    let lockedQC = blockHashC * blockHashC * 200.0 + 10.0;
+    let effectiveQC = mix(baseQC, lockedQC, lockAmt);
+    let qC = max(1.0, floor((effectiveQC * scale + 50.0) / 100.0));
+    var coeffCb = round((0.25 * au * av * sumCb_d) / qC) * qC;
+    var coeffCr = round((0.25 * au * av * sumCr_d) / qC) * qC;
+    if (params.row6.x > 0.5 && (ox != 0u || oy != 0u)) {
+      coeffCb = -coeffCb;
+      coeffCr = -coeffCr;
+    }
+    dctCb[y][x] = coeffCb;
+    dctCr[y][x] = coeffCr;
   } else {
     dctCb[y][x] = 0.0;
     dctCr[y][x] = 0.0;

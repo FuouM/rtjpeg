@@ -22,4 +22,6 @@ export const engineState = {
   dcStep: 0,
   phaseShift: 0,
   echoBeforeJpeg: 0,
+  invertDct: 0,
+  lockChroma: 0,
 };

@@ -149,6 +149,18 @@ export const damageRangeControls: RangeControlConfig[] = [
     helpAriaLabel:
       "Phase Shift: Audacity style sine wave across frequency bins",
   },
+  {
+    id: "lock-chroma-slider",
+    labelHtml: "Lock Chroma",
+    valueId: "lock-chroma-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "Locks chroma quantization table to flat values.",
+    helpAriaLabel: "Lock Chroma quantization table multiplier",
+  },
 ];
 
 export const chromaControl: SelectControlConfig = {
@@ -178,5 +190,11 @@ export const toggleControls: ToggleControlConfig[] = [
     helpTitle: "Apply feedback before compression for recursive artifacts.",
     helpAriaLabel:
       "Echo before JPEG: when on, echo is blended into the pipeline before JPEG",
+  },
+  {
+    id: "invert-dct-toggle",
+    label: "Invert DCT",
+    helpTitle: "Negates the DCT coefficients for an inverted look.",
+    helpAriaLabel: "Invert DCT coefficients",
   },
 ];

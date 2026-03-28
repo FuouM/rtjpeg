@@ -89,6 +89,8 @@ export function setupGpuController(deps: GpuControllerDeps) {
       customFlowX: flowState.customFlowX,
       customFlowY: flowState.customFlowY,
       useCustomFlow: flowState.useCustomFlow,
+      invertDct: engineState.invertDct,
+      lockChroma: engineState.lockChroma,
     });
     gpu.device.queue.writeBuffer(gpu.paramsBuffer, 0, paramsData);
     engineState.moshResetRequested = false;
