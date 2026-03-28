@@ -99,9 +99,18 @@ export function setupGpuController(deps: GpuControllerDeps) {
     gpu.device.queue.writeBuffer(gpu.paramsBuffer, 0, paramsData);
     engineState.moshResetRequested = false;
 
-    if ((engineState.huffmanDesync > 0 || engineState.huffmanCorrupt > 0) && gpu.huffmanLuts) {
+    if (
+      (engineState.huffmanDesync > 0 || engineState.huffmanCorrupt > 0) &&
+      gpu.huffmanLuts
+    ) {
       const data = packHuffmanLuts();
-      gpu.device.queue.writeBuffer(gpu.huffmanLuts, 0, data.buffer, 0, data.byteLength);
+      gpu.device.queue.writeBuffer(
+        gpu.huffmanLuts,
+        0,
+        data.buffer,
+        0,
+        data.byteLength,
+      );
     }
   }
 

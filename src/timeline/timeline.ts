@@ -238,7 +238,7 @@ export function stepFrameTime(
   const allPts = deps.videoAllPresentationTimesSorted;
   if (allPts && allPts.length > 0) {
     const n = allPts.length;
-    let idx = lastSampleIndexAtOrBefore(allPts, Math.max(0, t));
+    const idx = lastSampleIndexAtOrBefore(allPts, Math.max(0, t));
     let nextIdx = idx + direction;
     if (nextIdx < 0) nextIdx = n - 1;
     else if (nextIdx >= n) nextIdx = 0;
@@ -250,7 +250,7 @@ export function stepFrameTime(
   const fps = timelineDisplayFps(deps);
   const clamped = Math.max(0, Math.min(t, dur));
   const maxIdx = Math.max(0, Math.ceil(dur * fps) - 1);
-  let frameIdx = Math.min(maxIdx, Math.floor(clamped * fps));
+  const frameIdx = Math.min(maxIdx, Math.floor(clamped * fps));
   let nextFrame = frameIdx + direction;
   if (nextFrame < 0) nextFrame = maxIdx;
   else if (nextFrame > maxIdx) nextFrame = 0;

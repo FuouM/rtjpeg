@@ -235,13 +235,19 @@ export function setupParameterController({
   });
 
   dom.huffmanDesyncSlider.addEventListener("input", (e) => {
-    engineState.huffmanDesync = parseInt((e.target as HTMLInputElement).value, 10);
+    engineState.huffmanDesync = parseInt(
+      (e.target as HTMLInputElement).value,
+      10,
+    );
     dom.huffmanDesyncVal.textContent = engineState.huffmanDesync.toString();
     onParamsChanged(true);
   });
 
   dom.huffmanCorruptSlider.addEventListener("input", (e) => {
-    engineState.huffmanCorrupt = parseInt((e.target as HTMLInputElement).value, 10);
+    engineState.huffmanCorrupt = parseInt(
+      (e.target as HTMLInputElement).value,
+      10,
+    );
     dom.huffmanCorruptVal.textContent = engineState.huffmanCorrupt.toString();
     onParamsChanged(true);
   });

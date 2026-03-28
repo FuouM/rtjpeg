@@ -151,14 +151,20 @@ export class GpuContext {
     // 3x to accommodate Y, Cb, and Cr
     this.encodedBitstream = this.device.createBuffer({
       size: totalBlocks * 1024 * 3,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+      usage:
+        GPUBufferUsage.STORAGE |
+        GPUBufferUsage.COPY_SRC |
+        GPUBufferUsage.COPY_DST,
     });
 
     // 2x u32 per block: [bitOffset, bitLength]
     // 3x to accommodate Y, Cb, and Cr
     this.bitstreamMetadata = this.device.createBuffer({
       size: totalBlocks * 8 * 3,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+      usage:
+        GPUBufferUsage.STORAGE |
+        GPUBufferUsage.COPY_SRC |
+        GPUBufferUsage.COPY_DST,
     });
 
     // Pre-computed tables (approx 1.2MB for 16-bit LUTs)

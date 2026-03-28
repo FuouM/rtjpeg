@@ -407,17 +407,15 @@ async function probeMp4VideoTrack(
     };
 
     mp4box.onError = () => finish(null);
-    mp4box.onReady = (
-      info: {
-        videoTracks?: Array<{
-          id: number;
-          codec: string;
-          track_width: number;
-          track_height: number;
-          description?: AllowSharedBufferSource;
-        }>;
-      },
-    ) => {
+    mp4box.onReady = (info: {
+      videoTracks?: Array<{
+        id: number;
+        codec: string;
+        track_width: number;
+        track_height: number;
+        description?: AllowSharedBufferSource;
+      }>;
+    }) => {
       const videoTrack = info.videoTracks?.[0];
       if (!videoTrack) {
         finish(null);
