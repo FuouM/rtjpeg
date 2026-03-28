@@ -111,15 +111,16 @@ fn get_value_bits(val: i32, cat: u32) -> u32 {
 }
 
 const ZigZag = array<u32, 64>(
-  0u,  1u,  5u,  6u, 14u, 15u, 27u, 28u,
-  2u,  4u,  7u, 13u, 16u, 26u, 29u, 42u,
-  3u,  8u, 12u, 17u, 25u, 30u, 41u, 43u,
-  9u, 11u, 18u, 24u, 31u, 40u, 44u, 53u,
- 10u, 19u, 23u, 32u, 39u, 45u, 52u, 54u,
- 20u, 22u, 33u, 38u, 46u, 51u, 55u, 60u,
- 21u, 34u, 37u, 47u, 50u, 56u, 59u, 61u,
- 35u, 36u, 48u, 49u, 57u, 58u, 62u, 63u
+  0u,  1u,  8u, 16u,  9u,  2u,  3u, 10u,
+ 17u, 24u, 32u, 25u, 18u, 11u,  4u,  5u,
+ 12u, 19u, 26u, 33u, 40u, 48u, 41u, 34u,
+ 27u, 20u, 13u,  6u,  7u, 14u, 21u, 28u,
+ 35u, 42u, 49u, 56u, 57u, 50u, 43u, 36u,
+ 29u, 22u, 15u, 23u, 30u, 37u, 44u, 51u,
+ 58u, 59u, 52u, 45u, 38u, 31u, 39u, 46u,
+ 53u, 60u, 61u, 54u, 47u, 55u, 62u, 63u
 );
+
 
 // Standard JPEG Huffman Tables (simplified for implementation)
 // In a full implementation, these would be provided via huffmanTables buffer
@@ -791,7 +792,7 @@ fn compute_main(
       // Decode (with Desync)
       var reader: BitReader;
       reader.byteOffset = 0u;
-      reader.bitOffset = u32(hDesync * 8.0); // Shift start bit based on desync
+      reader.bitOffset = u32(hDesync * 64.0); // Finer bit-level desync
       reader.blockBase = writer.blockBase;
       
       var dec_prev_dc = 0;
@@ -834,9 +835,14 @@ fn compute_main(
           }
         }
         
-        var cb_reader: BitReader;
-        cb_reader.byteOffset = 0u; cb_reader.bitOffset = u32(hDesync * 8.0);
-        cb_reader.blockBase = cb_writer.blockBase;
+        let validChromaForBlock = (cMode == 0u)
+                               || (cMode == 1u && (blockIdxInGroup == 0u || blockIdxInGroup == 2u))
+                               || (cMode == 2u && (blockIdxInGroup == 0u));
+
+        if (validChromaForBlock) {
+          var cb_reader: BitReader;
+          cb_reader.byteOffset = 0u; cb_reader.bitOffset = u32(hDesync * 64.0);
+          cb_reader.blockBase = cb_writer.blockBase;
         var dec_cb_coeffs: array<f32, 64>;
         var dec_cb_prev_dc = 0;
         decode_block(&cb_reader, &dec_cb_coeffs, true, &dec_cb_prev_dc);
@@ -871,15 +877,16 @@ fn compute_main(
           }
         }
         
-        var cr_reader: BitReader;
-        cr_reader.byteOffset = 0u; cr_reader.bitOffset = u32(hDesync * 8.0);
-        cr_reader.blockBase = cr_writer.blockBase;
-        var dec_cr_coeffs: array<f32, 64>;
-        var dec_cr_prev_dc = 0;
-        decode_block(&cr_reader, &dec_cr_coeffs, true, &dec_cr_prev_dc);
-        for (var i = 0u; i < 64u; i++) {
-          let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
-          dctCr[qy * 8u + ly][qx * 8u + lx] = dec_cr_coeffs[i];
+          var cr_reader: BitReader;
+          cr_reader.byteOffset = 0u; cr_reader.bitOffset = u32(hDesync * 64.0);
+          cr_reader.blockBase = cr_writer.blockBase;
+          var dec_cr_coeffs: array<f32, 64>;
+          var dec_cr_prev_dc = 0;
+          decode_block(&cr_reader, &dec_cr_coeffs, true, &dec_cr_prev_dc);
+          for (var i = 0u; i < 64u; i++) {
+            let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
+            dctCr[qy * 8u + ly][qx * 8u + lx] = dec_cr_coeffs[i];
+          }
         }
       }
     }
