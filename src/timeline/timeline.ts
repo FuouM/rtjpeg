@@ -106,7 +106,9 @@ function snapHeadTimeToTimelineGrid(deps: TimelineDeps, t: number): number {
     const st = deps.uniformTimelineTimeForSlot(slot);
     if (st !== null) return Math.max(0, Math.min(st, dur));
   }
-  return Math.min(dur, Math.floor(clamped * fps) / fps);
+  const maxIdx = Math.max(0, Math.ceil(dur * fps) - 1);
+  const frameIdx = Math.min(maxIdx, Math.floor(clamped * fps));
+  return Math.min(dur, frameIdx / fps);
 }
 
 function currentHeadTimeForUI(deps: TimelineDeps): number {
@@ -209,6 +211,50 @@ function formatTimeDisplayWithFrames(
   return `${clock}  ·  ${String(c).padStart(frameW, "0")} / ${String(
     totalFrames,
   ).padStart(frameW, "0")}`;
+}
+
+/**
+ * Next / previous timeline frame time (container PTS when present, else FPS grid — not raw cache).
+ * Stepping past the last frame wraps to the first; before the first wraps to the last.
+ * @param baseTimeOverride When set (rapid frame-step burst), step from this time instead of
+ *   currentHeadTimeForUI — avoids keyframe-snapped `video.currentTime` repeating the same index.
+ * Returns null for images, offline render, or unknown duration.
+ */
+export function stepFrameTime(
+  deps: TimelineDeps,
+  direction: -1 | 1,
+  baseTimeOverride?: number,
+): number | null {
+  if (deps.isImageSource() || deps.isOfflineRendering) return null;
+  const dur = deps.sourceVideo.duration;
+  if (!dur || !isFinite(dur) || dur <= 0) return null;
+
+  const t =
+    baseTimeOverride !== undefined &&
+    Number.isFinite(baseTimeOverride) &&
+    baseTimeOverride >= 0
+      ? Math.min(baseTimeOverride, dur)
+      : currentHeadTimeForUI(deps);
+  const allPts = deps.videoAllPresentationTimesSorted;
+  if (allPts && allPts.length > 0) {
+    const n = allPts.length;
+    let idx = lastSampleIndexAtOrBefore(allPts, Math.max(0, t));
+    let nextIdx = idx + direction;
+    if (nextIdx < 0) nextIdx = n - 1;
+    else if (nextIdx >= n) nextIdx = 0;
+    return Math.max(0, Math.min(allPts[nextIdx], dur));
+  }
+
+  // No container PTS: step on the same FPS grid as snapHeadTimeToTimelineGrid — never limit to
+  // GPU raw-cache indices (cache is partial; video seek must reach every frame).
+  const fps = timelineDisplayFps(deps);
+  const clamped = Math.max(0, Math.min(t, dur));
+  const maxIdx = Math.max(0, Math.ceil(dur * fps) - 1);
+  let frameIdx = Math.min(maxIdx, Math.floor(clamped * fps));
+  let nextFrame = frameIdx + direction;
+  if (nextFrame < 0) nextFrame = maxIdx;
+  else if (nextFrame > maxIdx) nextFrame = 0;
+  return Math.min(dur, nextFrame / fps);
 }
 
 function indexFromTime(

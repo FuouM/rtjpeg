@@ -58,6 +58,8 @@ export interface AppDom {
   liveExportMp4Btn: HTMLButtonElement;
   liveExportCancelBtn: HTMLButtonElement;
   playPauseBtn: HTMLButtonElement;
+  frameStepPrevBtn: HTMLButtonElement;
+  frameStepNextBtn: HTMLButtonElement;
   seekSlider: HTMLInputElement;
   timeDisplay: HTMLSpanElement;
   cachingText: HTMLSpanElement;
@@ -168,6 +170,8 @@ export function queryAppDom(): AppDom {
     liveExportMp4Btn: req("live-export-mp4-btn"),
     liveExportCancelBtn: req("live-export-cancel-btn"),
     playPauseBtn: req("play-pause-btn"),
+    frameStepPrevBtn: req("frame-step-prev-btn"),
+    frameStepNextBtn: req("frame-step-next-btn"),
     seekSlider: req("seek-slider"),
     timeDisplay: req("time-display"),
     cachingText: req("caching-text"),

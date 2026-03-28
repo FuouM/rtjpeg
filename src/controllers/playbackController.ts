@@ -1,5 +1,5 @@
 import { engineState } from "../state/engineState";
-import { seekScrubState } from "../timeline/seekScrub";
+import { resetFrameStepChain, seekScrubState } from "../timeline/seekScrub";
 import { renderLoopMutable } from "../renderer/renderLoop";
 
 export interface PlaybackControllerDeps {
@@ -41,6 +41,7 @@ export function setupPlaybackController(deps: PlaybackControllerDeps) {
   });
 
   sourceVideo.addEventListener("play", () => {
+    resetFrameStepChain();
     playPauseBtn.textContent = "PAUSE";
     const skipClear = seekScrubState.skipProcessedCacheClearOnNextPlay;
     seekScrubState.skipProcessedCacheClearOnNextPlay = false;

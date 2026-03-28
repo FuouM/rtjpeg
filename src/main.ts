@@ -35,11 +35,13 @@ import {
   startUILoop as startUILoopImpl,
   updateCacheCanvas as updateCacheCanvasImpl,
   updateTimeDisplayText as updateTimeDisplayTextImpl,
+  stepFrameTime,
   type TimelineDeps,
 } from "./timeline/timeline";
 import {
   attachSeekScrubHandlers,
   bumpDownSuppressTemporalHistoryIfPositive,
+  resetFrameStepChain,
   seekScrubState,
 } from "./timeline/seekScrub";
 import { createRenderLoop, renderLoopMutable } from "./renderer/renderLoop";
@@ -86,6 +88,8 @@ const {
   liveExportMp4Btn,
   liveExportCancelBtn,
   playPauseBtn,
+  frameStepPrevBtn,
+  frameStepNextBtn,
   seekSlider,
   timeDisplay,
   cachingText,
@@ -997,6 +1001,111 @@ attachSeekScrubHandlers({
   drawTimeline,
   startUILoop,
   updateTimeDisplayText,
+});
+
+function frameStepTargetIsEditable(event: EventTarget | null): boolean {
+  if (!event || !(event instanceof HTMLElement)) return false;
+  const el = event;
+  if (el.isContentEditable) return true;
+  const tag = el.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
+
+const FRAME_STEP_CHAIN_MS = 520;
+
+function applyFrameStep(direction: -1 | 1): void {
+  if (offlineRenderState.isOfflineRendering) return;
+  sourceVideo.pause();
+  const now = performance.now();
+  const chain = seekScrubState;
+  const chainBase =
+    chain.frameStepChainTarget !== null &&
+    now - chain.frameStepChainAtMs < FRAME_STEP_CHAIN_MS
+      ? chain.frameStepChainTarget
+      : undefined;
+  const target = stepFrameTime(timelineDeps, direction, chainBase);
+  if (target === null) return;
+  chain.frameStepChainTarget = target;
+  chain.frameStepChainAtMs = performance.now();
+  seekScrubState.isSeeking = false;
+  seekScrubState.scrubTime = null;
+  seekScrubState.suppressTemporalHistoryRenders = Math.max(
+    seekScrubState.suppressTemporalHistoryRenders,
+    2,
+  );
+  sourceVideo.currentTime = target;
+  playbackTiming.lastMediaTime = target;
+  playbackTiming.lastMediaTimestamp = performance.now();
+  const dur = sourceVideo.duration;
+  if (dur && isFinite(dur) && dur > 0) {
+    seekSlider.value = String((target / dur) * 100);
+  }
+  drawTimeline();
+  updateTimeDisplayText();
+  startUILoop();
+  render();
+}
+
+/** Press-and-hold frame step (same idea as OS key repeat: delay then interval). */
+let frameStepHoldDelayId: number | null = null;
+let frameStepHoldIntervalId: number | null = null;
+
+function clearFrameStepHold(): void {
+  const hadHold =
+    frameStepHoldDelayId !== null || frameStepHoldIntervalId !== null;
+  if (frameStepHoldDelayId !== null) {
+    clearTimeout(frameStepHoldDelayId);
+    frameStepHoldDelayId = null;
+  }
+  if (frameStepHoldIntervalId !== null) {
+    clearInterval(frameStepHoldIntervalId);
+    frameStepHoldIntervalId = null;
+  }
+  if (hadHold) resetFrameStepChain();
+}
+
+function setupFrameStepButtonHold(
+  btn: HTMLButtonElement,
+  direction: -1 | 1,
+): void {
+  const startHold = () => {
+    clearFrameStepHold();
+    frameStepHoldDelayId = window.setTimeout(() => {
+      frameStepHoldDelayId = null;
+      frameStepHoldIntervalId = window.setInterval(
+        () => applyFrameStep(direction),
+        45,
+      );
+    }, 280);
+  };
+  btn.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    applyFrameStep(direction);
+    startHold();
+  });
+  btn.addEventListener("pointerup", clearFrameStepHold);
+  btn.addEventListener("pointerleave", clearFrameStepHold);
+  btn.addEventListener("pointercancel", clearFrameStepHold);
+  btn.addEventListener("lostpointercapture", clearFrameStepHold);
+}
+
+window.addEventListener("pointerup", clearFrameStepHold);
+window.addEventListener("blur", clearFrameStepHold);
+
+setupFrameStepButtonHold(frameStepPrevBtn, -1);
+setupFrameStepButtonHold(frameStepNextBtn, 1);
+
+window.addEventListener("keydown", (event) => {
+  const prevKey = event.key === "<" || event.key === "ArrowLeft";
+  const nextKey = event.key === ">" || event.key === "ArrowRight";
+  if (!prevKey && !nextKey) return;
+  if (frameStepTargetIsEditable(event.target)) return;
+  if (!changelogModal.classList.contains("hidden")) return;
+  if (!presetModal.classList.contains("hidden")) return;
+  if (!welcomeSampleOverlay.classList.contains("hidden")) return;
+  if (liveExportPicker.getAttribute("aria-hidden") === "false") return;
+  event.preventDefault();
+  applyFrameStep(prevKey ? -1 : 1);
 });
 
 requestAnimationFrame(() => {

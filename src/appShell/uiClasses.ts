@@ -16,6 +16,9 @@ export const MONO_BUTTON_COMPACT_CLASS = `font-mono text-[9px] tracking-[0.12em]
 
 export const TRANSPORT_PLAY_PAUSE_BUTTON_CLASS = `inline-flex w-[5.5rem] max-lg:w-[5rem] shrink-0 items-center justify-center font-mono text-[11px] font-black uppercase tracking-widest border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black px-2 py-1.5 hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-colors cursor-pointer leading-none brutal-btn max-lg:py-1`;
 
+/** Frame step chevrons — same padding as play/pause; icons sized to ~11px to match label cap height */
+export const FRAME_STEP_BUTTON_CLASS = `inline-flex shrink-0 items-center justify-center font-mono text-[0] leading-none font-black tracking-[0.12em] ${MONO_BRUTAL_BTN} px-2 py-1.5 max-lg:py-1 min-w-[2rem]`;
+
 export const WELCOME_PRIMARY_CTA_CLASS =
   "mt-4 w-full font-mono text-[11px] font-black uppercase tracking-widest border-2 border-white bg-white text-black px-4 py-2 hover:bg-black hover:text-white transition-colors cursor-pointer leading-none brutal-btn";
 

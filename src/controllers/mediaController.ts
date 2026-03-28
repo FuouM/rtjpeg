@@ -126,6 +126,8 @@ export function setupMediaController(deps: MediaControllerDeps) {
     dom.renderBtn.textContent = imageMode ? "SAVE IMAGE" : "RENDER";
 
     dom.playPauseBtn.disabled = imageMode;
+    dom.frameStepPrevBtn.disabled = imageMode;
+    dom.frameStepNextBtn.disabled = imageMode;
     dom.seekSlider.disabled = imageMode;
     dom.timelineCanvas.style.cursor = imageMode ? "default" : "pointer";
 

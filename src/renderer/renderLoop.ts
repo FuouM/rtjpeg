@@ -493,11 +493,14 @@ export function createRenderLoop(deps: RenderLoopDeps) {
       // After scrub release, keep the last good frame on screen until the decoder lands.
       // Rendering from the live element while native seeking is still in flight can flash
       // a darker transitional frame even when temporal effects are disabled.
+      // When paused (frame step / keyboard), allow the pipeline to run so uncached seeks can
+      // resolve; seeked will refine once the decoder finishes.
       if (
         !deps.isImageSource() &&
         sourceVideo.seeking &&
         !deps.getIsSeeking() &&
-        !pulledFromCache
+        !pulledFromCache &&
+        !sourceVideo.paused
       ) {
         scheduleNextFrame();
         return;

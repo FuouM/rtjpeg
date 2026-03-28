@@ -10,7 +10,18 @@ export const seekScrubState = {
   scrubTime: null as number | null,
   /** Upcoming compute renders that should ignore stale previous-frame history after a seek jump. */
   suppressTemporalHistoryRenders: 0,
+  /**
+   * Rapid frame-step (keys / hold): advance from last requested time. The media element often
+   * reports keyframe-snapped currentTime; chaining avoids repeating the same logical frame index.
+   */
+  frameStepChainTarget: null as number | null,
+  frameStepChainAtMs: 0,
 };
+
+/** Clear frame-step burst so the next step uses the real playhead (after scrub, play, etc.). */
+export function resetFrameStepChain(): void {
+  seekScrubState.frameStepChainTarget = null;
+}
 
 export function bumpDownSuppressTemporalHistoryIfPositive(): void {
   const s = seekScrubState;
@@ -172,6 +183,7 @@ export function attachSeekScrubHandlers(
 
   const onTimelinePointerDown = (e: PointerEvent) => {
     if (deps.isImageSource()) return;
+    resetFrameStepChain();
     e.preventDefault();
     deps.timelineCanvas.setPointerCapture(e.pointerId);
     timelinePointerDown = true;
@@ -216,6 +228,7 @@ export function attachSeekScrubHandlers(
 
   deps.seekSlider.addEventListener("input", (e) => {
     if (deps.isImageSource()) return;
+    resetFrameStepChain();
     const val = parseFloat((e.target as HTMLInputElement).value);
     if (deps.sourceVideo.duration) {
       const t = (val / 100) * deps.sourceVideo.duration;
