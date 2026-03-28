@@ -161,6 +161,30 @@ export const damageRangeControls: RangeControlConfig[] = [
     helpTitle: "Locks chroma quantization table to flat values.",
     helpAriaLabel: "Lock Chroma quantization table multiplier",
   },
+  {
+    id: "huffman-desync-slider",
+    labelHtml: "Bit Desync",
+    valueId: "huffman-desync-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "JPEG Huffman bitstream desynchronization (offset shift).",
+    helpAriaLabel: "Huffman desync: bitstream offset drift",
+  },
+  {
+    id: "huffman-corrupt-slider",
+    labelHtml: "Bit Corrupt",
+    valueId: "huffman-corrupt-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "JPEG Huffman bitstream corruption (random bit flips).",
+    helpAriaLabel: "Huffman corrupt: bitstream bit flips",
+  },
 ];
 
 export const chromaControl: SelectControlConfig = {

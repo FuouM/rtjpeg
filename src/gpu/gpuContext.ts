@@ -19,6 +19,12 @@ export class GpuContext {
   /** 1×1 black — neutral previous-frame input before first real frame. */
   readonly neutralTexture: GPUTexture;
   readonly neutralTextureView: GPUTextureView;
+  /** Buffer for intermediate Huffman-encoded bitstream. */
+  encodedBitstream: GPUBuffer | null = null;
+  /** Metadata for bitstream (offsets per block). */
+  bitstreamMetadata: GPUBuffer | null = null;
+  /** Pre-computed Huffman decoding LUTs. */
+  huffmanLuts: GPUBuffer | null = null;
 
   storageTexture: GPUTexture | null = null;
   prevStorageTexture: GPUTexture | null = null;
@@ -130,6 +136,35 @@ export class GpuContext {
         { binding: 0, resource: this.sampler },
         { binding: 1, resource: this.storageTextureView },
       ],
+    });
+  }
+
+  /**
+   * (Re)create Huffman-related buffers for the current output dimensions.
+   */
+  recreateHuffmanBuffers(totalBlocks: number): void {
+    if (this.encodedBitstream) this.encodedBitstream.destroy();
+    if (this.bitstreamMetadata) this.bitstreamMetadata.destroy();
+    if (this.huffmanLuts) this.huffmanLuts.destroy();
+
+    // Max 1024 bytes per block (over-allocation for safety in glitches)
+    // 3x to accommodate Y, Cb, and Cr
+    this.encodedBitstream = this.device.createBuffer({
+      size: totalBlocks * 1024 * 3,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+    });
+
+    // 2x u32 per block: [bitOffset, bitLength]
+    // 3x to accommodate Y, Cb, and Cr
+    this.bitstreamMetadata = this.device.createBuffer({
+      size: totalBlocks * 8 * 3,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+    });
+
+    // Pre-computed tables (approx 4KB)
+    this.huffmanLuts = this.device.createBuffer({
+      size: 4096,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
   }
 }

@@ -14,15 +14,254 @@ struct Params {
   row3: vec4<f32>,
   row4: vec4<f32>,
   row5: vec4<f32>,
-  row6: vec4<f32>, // x: invert DCT, y: lock chroma table
+  row6: vec4<f32>, // x: invert DCT, y: lock chroma table, z: huffman desync, w: huffman corrupt
 }
 
-@group(0) @binding(0) var inputTex: texture_external;
+struct HuffmanEntry {
+  code: u32,
+  len: u32,
+  val: u32,
+}
+
+struct HuffmanMetadata {
+  bitOffset: u32,
+  bitLength: u32,
+}
+
+@group(0) @binding(0) var inputTex: texture_2d<f32>;
 @group(0) @binding(1) var outputTex: texture_storage_2d<rgba8unorm, write>;
 @group(0) @binding(2) var<uniform> params: Params;
 @group(0) @binding(3) var prevOutputTex: texture_2d<f32>;
 @group(0) @binding(4) var prevInputTex: texture_2d<f32>;
+@group(0) @binding(5) var<storage, read_write> encodedBitstream: array<u32>;
+@group(0) @binding(6) var<storage, read_write> bitstreamMetadata: array<HuffmanMetadata>;
+@group(0) @binding(7) var<storage, read> huffmanTables: array<u32>; // Pre-computed LUTs
 
+struct BitWriter {
+  byteOffset: u32,
+  bitOffset: u32, // 0..7
+  blockBase: u32, // starting word index in encodedBitstream
+}
+
+fn write_bit(w: ptr<function, BitWriter>, bit: u32) {
+  let wordIdx = (*w).blockBase + (*w).byteOffset / 4u;
+  let byteInWord = (*w).byteOffset % 4u;
+  let bitInByte = (*w).bitOffset;
+  
+  if (bit != 0u) {
+    let mask = 1u << (31u - (byteInWord * 8u + bitInByte));
+    encodedBitstream[wordIdx] |= mask;
+  }
+  
+  (*w).bitOffset++;
+  if ((*w).bitOffset == 8u) {
+    (*w).bitOffset = 0u;
+    (*w).byteOffset++;
+  }
+}
+
+fn write_bits(w: ptr<function, BitWriter>, val: u32, len: u32) {
+  for (var i = 0u; i < len; i++) {
+    let bit = (val >> (len - 1u - i)) & 1u;
+    write_bit(w, bit);
+  }
+}
+
+struct BitReader {
+  byteOffset: u32,
+  bitOffset: u32,
+  blockBase: u32,
+}
+
+fn read_bit(r: ptr<function, BitReader>) -> u32 {
+  let wordIdx = (*r).blockBase + (*r).byteOffset / 4u;
+  let byteInWord = (*r).byteOffset % 4u;
+  let bitInByte = (*r).bitOffset;
+  
+  let word = encodedBitstream[wordIdx];
+  let bit = (word >> (31u - (byteInWord * 8u + bitInByte))) & 1u;
+  
+  (*r).bitOffset++;
+  if ((*r).bitOffset == 8u) {
+    (*r).bitOffset = 0u;
+    (*r).byteOffset++;
+  }
+  return bit;
+}
+
+fn read_bits(r: ptr<function, BitReader>, len: u32) -> u32 {
+  var val = 0u;
+  for (var i = 0u; i < len; i++) {
+    val = (val << 1u) | read_bit(r);
+  }
+  return val;
+}
+
+// Bits needed to represent a value (used for Category)
+fn get_category(val: i32) -> u32 {
+  var v = abs(val);
+  if (v == 0) { return 0u; }
+  return u32(firstLeadingBit(v)) + 1u;
+}
+
+// Map a value to JPEG Huffman bits
+fn get_value_bits(val: i32, cat: u32) -> u32 {
+  if (val >= 0) { return u32(val); }
+  return u32(val + i32(1u << cat) - 1);
+}
+
+const ZigZag = array<u32, 64>(
+  0u,  1u,  5u,  6u, 14u, 15u, 27u, 28u,
+  2u,  4u,  7u, 13u, 16u, 26u, 29u, 42u,
+  3u,  8u, 12u, 17u, 25u, 30u, 41u, 43u,
+  9u, 11u, 18u, 24u, 31u, 40u, 44u, 53u,
+ 10u, 19u, 23u, 32u, 39u, 45u, 52u, 54u,
+ 20u, 22u, 33u, 38u, 46u, 51u, 55u, 60u,
+ 21u, 34u, 37u, 47u, 50u, 56u, 59u, 61u,
+ 35u, 36u, 48u, 49u, 57u, 58u, 62u, 63u
+);
+
+// Standard JPEG Huffman Tables (simplified for implementation)
+// In a full implementation, these would be provided via huffmanTables buffer
+// For now, we'll use a subset to demonstrate the logic, then expand.
+// [Code, Length] pairs
+struct CodeEntry {
+  code: u32,
+  len: u32,
+}
+
+fn get_dc_code(is_chroma: bool, cat: u32) -> CodeEntry {
+  let base = select(0u, 12u, is_chroma);
+  let val = huffmanTables[base + cat];
+  return CodeEntry(val >> 16u, val & 0xFFFFu);
+}
+
+// AC tables start at index 24 for Luma, 280 for Chroma
+fn get_ac_code(is_chroma: bool, run: u32, cat: u32) -> CodeEntry {
+  let rs = (run << 4u) | cat;
+  let base = select(24u, 280u, is_chroma);
+  let val = huffmanTables[base + rs];
+  return CodeEntry(val >> 16u, val & 0xFFFFu);
+}
+
+fn encode_block(
+  w: ptr<function, BitWriter>,
+  coeffs: ptr<function, array<f32, 64>>,
+  is_chroma: bool,
+  prev_dc: ptr<function, i32>
+) {
+  let dc_val = i32((*coeffs)[0]);
+  let diff = dc_val - (*prev_dc);
+  *prev_dc = dc_val;
+  
+  let cat = get_category(diff);
+  let dc_code = get_dc_code(is_chroma, cat);
+  write_bits(w, dc_code.code, dc_code.len);
+  write_bits(w, get_value_bits(diff, cat), cat);
+  
+  var run = 0u;
+  for (var i = 1u; i < 64u; i++) {
+    let ac = i32((*coeffs)[i]);
+    if (ac == 0) {
+      run++;
+    } else {
+      while (run >= 16u) {
+        let zrl = get_ac_code(is_chroma, 15u, 0u);
+        write_bits(w, zrl.code, zrl.len);
+        run -= 16u;
+      }
+      let ac_cat = get_category(ac);
+      let ac_code = get_ac_code(is_chroma, run, ac_cat);
+      write_bits(w, ac_code.code, ac_code.len);
+      write_bits(w, get_value_bits(ac, ac_cat), ac_cat);
+      run = 0u;
+    }
+  }
+  if (run > 0u) {
+    let eob = get_ac_code(is_chroma, 0u, 0u);
+    write_bits(w, eob.code, eob.len);
+  }
+}
+
+// Decode a single symbol from the bitstream using the provided table
+fn decode_symbol(r: ptr<function, BitReader>, is_chroma: bool, is_ac: bool) -> u32 {
+  var code = 0u;
+  var len = 0u;
+  
+  // Standard sequential search (no shortcuts, but bit-by-bit is slow)
+  // Optimal for "accurate glitch" where bits might be anything
+  for (len = 1u; len <= 16u; len++) {
+    code = (code << 1u) | read_bit(r);
+    
+    // Check against table (this is the "no shortcut" part)
+    if (is_ac) {
+      let base = select(24u, 280u, is_chroma);
+      for (var rs = 0u; rs < 256u; rs++) {
+        let entry = huffmanTables[base + rs];
+        if ((entry & 0xFFFFu) == len && (entry >> 16u) == code) {
+          return rs;
+        }
+      }
+    } else {
+      let base = select(0u, 12u, is_chroma);
+      for (var cat = 0u; cat < 12u; cat++) {
+        let entry = huffmanTables[base + cat];
+        if ((entry & 0xFFFFu) == len && (entry >> 16u) == code) {
+          return cat;
+        }
+      }
+    }
+  }
+  return 0u; // Fallback
+}
+
+fn decode_value(r: ptr<function, BitReader>, cat: u32) -> i32 {
+  if (cat == 0u) { return 0; }
+  let bits = read_bits(r, cat);
+  let threshold = 1u << (cat - 1u);
+  if (bits < threshold) {
+    return i32(bits) - i32((1u << cat) - 1u);
+  }
+  return i32(bits);
+}
+
+fn decode_block(
+  r: ptr<function, BitReader>,
+  coeffs: ptr<function, array<f32, 64>>,
+  is_chroma: bool,
+  prev_dc: ptr<function, i32>
+) {
+  // Clear block
+  for (var i = 0u; i < 64u; i++) { (*coeffs)[i] = 0.0; }
+  
+  // DC
+  let cat = decode_symbol(r, is_chroma, false);
+  let diff = decode_value(r, cat);
+  let dc_val = (*prev_dc) + diff;
+  (*coeffs)[0] = f32(dc_val);
+  *prev_dc = dc_val;
+  
+  // AC
+  var i = 1u;
+  while (i < 64u) {
+    let rs = decode_symbol(r, is_chroma, true);
+    let run = rs >> 4u;
+    let ac_cat = rs & 0xFu;
+    
+    if (ac_cat == 0u) {
+      if (run == 15u) { i += 16u; } // ZRL
+      else { break; } // EOB
+    } else {
+      i += run;
+      if (i < 64u) {
+        (*coeffs)[ZigZag[i]] = f32(decode_value(r, ac_cat));
+        i++;
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------
 // 16×16 workgroup shared memory
 var<workgroup> blockY:  array<array<f32, 16>, 16>;
 var<workgroup> blockCb: array<array<f32, 16>, 16>;
@@ -92,10 +331,10 @@ fn ycbcr2rgb_drift(ycbcr: vec3<f32>, drift: f32) -> vec3<f32> {
   return select(vec3<f32>(r1, g1, b1), vec3<f32>(r2, g2, b2), drift > 0.5);
 }
 
-fn load_external_clamped(tex: texture_external, src_px: vec2<u32>, src_dims: vec2<u32>) -> vec3<f32> {
+fn load_external_clamped(tex: texture_2d<f32>, src_px: vec2<u32>, src_dims: vec2<u32>) -> vec3<f32> {
   let cx = min(src_px.x, select(src_dims.x - 1u, 0u, src_dims.x == 0u));
   let cy = min(src_px.y, select(src_dims.y - 1u, 0u, src_dims.y == 0u));
-  return textureLoad(tex, vec2<i32>(i32(cx), i32(cy))).rgb;
+  return textureLoad(tex, vec2<i32>(i32(cx), i32(cy)), 0).rgb;
 }
 
 fn out_px_to_src_px(out_px: vec2<u32>, src_dims: vec2<u32>, out_dims: vec2<u32>) -> vec2<u32> {
@@ -108,7 +347,7 @@ fn out_px_to_src_px(out_px: vec2<u32>, src_dims: vec2<u32>, out_dims: vec2<u32>)
   );
 }
 
-fn load_video_at_output_px(tex: texture_external, out_px: vec2<u32>, src_dims: vec2<u32>, out_dims: vec2<u32>) -> vec3<f32> {
+fn load_video_at_output_px(tex: texture_2d<f32>, out_px: vec2<u32>, src_dims: vec2<u32>, out_dims: vec2<u32>) -> vec3<f32> {
   return load_external_clamped(tex, out_px_to_src_px(out_px, src_dims, out_dims), src_dims);
 }
 
@@ -492,6 +731,160 @@ fn compute_main(
   }
 
   workgroupBarrier();
+
+  // -----------------------------------------------------------------------
+  // Huffman Stage (Accurate Glitch Effect)
+  // -----------------------------------------------------------------------
+  let hDesync = params.row6.z;
+  let hCorrupt = params.row6.w;
+  if (hDesync > 0.0 || hCorrupt > 0.0) {
+    // We use thread 0 of each 8x8 subgroup to process the block
+    let blockIdxInGroup = qy * 2u + qx;
+    let tidInSubgroup = oy * 8u + ox;
+    
+    if (tidInSubgroup == 0u) {
+      var coeffs: array<f32, 64>;
+      // Fetch coefficients from shared memory
+      for (var i = 0u; i < 64u; i++) {
+        let lx = ZigZag[i] % 8u;
+        let ly = ZigZag[i] / 8u;
+        coeffs[i] = dctY[qy * 8u + ly][qx * 8u + lx];
+      }
+      
+      // Setup Bitstream
+      let totalGroupsX = (u32(params.row0.y) + 15u) / 16u;
+      let globalWorkgroupId = group_id.y * totalGroupsX + group_id.x;
+      let globalBlockIdx = globalWorkgroupId * 4u + blockIdxInGroup;
+      let totalBlocks = (u32(params.row0.y) / 8u) * (u32(params.row0.z) / 8u);
+      
+      // Each block gets 256 words (1KB)
+      var writer: BitWriter;
+      writer.byteOffset = 0u;
+      writer.bitOffset = 0u;
+      writer.blockBase = globalBlockIdx * 256u;
+      
+      // Clear bitstream words (thread 0 only)
+      for (var w = 0u; w < 256u; w++) {
+        encodedBitstream[writer.blockBase + w] = 0u;
+      }
+      
+      // Encode
+      var prev_dc = 0;
+      encode_block(&writer, &coeffs, false, &prev_dc);
+      
+      // Store Metadata for Y
+      bitstreamMetadata[globalBlockIdx].bitOffset = writer.blockBase * 32u;
+      bitstreamMetadata[globalBlockIdx].bitLength = writer.byteOffset * 8u + writer.bitOffset;
+
+      // Glitch Stage (Corrupt)
+      if (hCorrupt > 0.0) {
+        for (var w = 0u; w < 256u; w++) {
+          if (w * 4u < writer.byteOffset) {
+            let wordSeed = hash3(vec3<u32>(globalBlockIdx, w, u32(params.row2.y)));
+            if (wordSeed < hCorrupt) {
+              encodedBitstream[writer.blockBase + w] ^= (1u << u32(wordSeed * 32.0));
+            }
+          }
+        }
+      }
+      
+      // Decode (with Desync)
+      var reader: BitReader;
+      reader.byteOffset = 0u;
+      reader.bitOffset = u32(hDesync * 8.0); // Shift start bit based on desync
+      reader.blockBase = writer.blockBase;
+      
+      var dec_prev_dc = 0;
+      var dec_coeffs: array<f32, 64>;
+      decode_block(&reader, &dec_coeffs, false, &dec_prev_dc);
+      
+      // Put back to shared memory
+      for (var i = 0u; i < 64u; i++) {
+        let lx = ZigZag[i] % 8u;
+        let ly = ZigZag[i] / 8u;
+        dctY[qy * 8u + ly][qx * 8u + lx] = dec_coeffs[i];
+      }
+      
+      // Repeat for Chroma
+      if (cMode < 3u) { // If not Grayscale
+        // Handle Cb
+        var cb_coeffs: array<f32, 64>;
+        for (var i = 0u; i < 64u; i++) {
+          let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
+          cb_coeffs[i] = dctCb[qy * 8u + ly][qx * 8u + lx];
+        }
+        var cb_writer: BitWriter;
+        cb_writer.byteOffset = 0u; cb_writer.bitOffset = 0u;
+        cb_writer.blockBase = (globalBlockIdx + totalBlocks) * 256u; 
+        for(var w=0u; w<256u; w++) { encodedBitstream[cb_writer.blockBase + w] = 0u; }
+        var cb_prev_dc = 0;
+        encode_block(&cb_writer, &cb_coeffs, true, &cb_prev_dc);
+
+        // Store Metadata for Cb
+        bitstreamMetadata[globalBlockIdx + totalBlocks].bitOffset = cb_writer.blockBase * 32u;
+        bitstreamMetadata[globalBlockIdx + totalBlocks].bitLength = cb_writer.byteOffset * 8u + cb_writer.bitOffset;
+        
+        // Glitch Cb
+        if (hCorrupt > 0.0) {
+          for (var w = 0u; w < 256u; w++) {
+            if (w * 4u < cb_writer.byteOffset) {
+              let s = hash3(vec3<u32>(globalBlockIdx + totalBlocks, w, u32(params.row2.y))); // use totalBlocks for seed too
+              if (s < hCorrupt) { encodedBitstream[cb_writer.blockBase + w] ^= (1u << u32(s * 32.0)); }
+            }
+          }
+        }
+        
+        var cb_reader: BitReader;
+        cb_reader.byteOffset = 0u; cb_reader.bitOffset = u32(hDesync * 8.0);
+        cb_reader.blockBase = cb_writer.blockBase;
+        var dec_cb_coeffs: array<f32, 64>;
+        var dec_cb_prev_dc = 0;
+        decode_block(&cb_reader, &dec_cb_coeffs, true, &dec_cb_prev_dc);
+        for (var i = 0u; i < 64u; i++) {
+          let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
+          dctCb[qy * 8u + ly][qx * 8u + lx] = dec_cb_coeffs[i];
+        }
+
+        // Handle Cr
+        var cr_coeffs: array<f32, 64>;
+        for (var i = 0u; i < 64u; i++) {
+          let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
+          cr_coeffs[i] = dctCr[qy * 8u + ly][qx * 8u + lx];
+        }
+        var cr_writer: BitWriter;
+        cr_writer.byteOffset = 0u; cr_writer.bitOffset = 0u;
+        cr_writer.blockBase = (globalBlockIdx + 2u * totalBlocks) * 256u; 
+        for(var w=0u; w<256u; w++) { encodedBitstream[cr_writer.blockBase + w] = 0u; }
+        var cr_prev_dc = 0;
+        encode_block(&cr_writer, &cr_coeffs, true, &cr_prev_dc);
+        
+        // Store Metadata for Cr
+        bitstreamMetadata[globalBlockIdx + 2u * totalBlocks].bitOffset = cr_writer.blockBase * 32u;
+        bitstreamMetadata[globalBlockIdx + 2u * totalBlocks].bitLength = cr_writer.byteOffset * 8u + cr_writer.bitOffset;
+
+        if (hCorrupt > 0.0) {
+          for (var w = 0u; w < 256u; w++) {
+            if (w * 4u < cr_writer.byteOffset) {
+              let s = hash3(vec3<u32>(globalBlockIdx + 2u * totalBlocks, w, u32(params.row2.y)));
+              if (s < hCorrupt) { encodedBitstream[cr_writer.blockBase + w] ^= (1u << u32(s * 32.0)); }
+            }
+          }
+        }
+        
+        var cr_reader: BitReader;
+        cr_reader.byteOffset = 0u; cr_reader.bitOffset = u32(hDesync * 8.0);
+        cr_reader.blockBase = cr_writer.blockBase;
+        var dec_cr_coeffs: array<f32, 64>;
+        var dec_cr_prev_dc = 0;
+        decode_block(&cr_reader, &dec_cr_coeffs, true, &dec_cr_prev_dc);
+        for (var i = 0u; i < 64u; i++) {
+          let lx = ZigZag[i] % 8u; let ly = ZigZag[i] / 8u;
+          dctCr[qy * 8u + ly][qx * 8u + lx] = dec_cr_coeffs[i];
+        }
+      }
+    }
+    workgroupBarrier();
+  }
 
   // -----------------------------------------------------------------------
   // Glitch: zero AC coefficients, randomise DC.

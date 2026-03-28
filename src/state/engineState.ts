@@ -24,4 +24,6 @@ export const engineState = {
   echoBeforeJpeg: 0,
   invertDct: 0,
   lockChroma: 0,
+  huffmanDesync: 0,
+  huffmanCorrupt: 0,
 };

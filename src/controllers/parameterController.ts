@@ -38,6 +38,8 @@ export function setupParameterController({
       seed: engineState.seed,
       invertDct: engineState.invertDct === 1,
       lockChroma: engineState.lockChroma,
+      huffmanDesync: engineState.huffmanDesync,
+      huffmanCorrupt: engineState.huffmanCorrupt,
     };
   }
 
@@ -110,6 +112,14 @@ export function setupParameterController({
 
     engineState.seed = normalizeSeedValue(values.seed);
     dom.seedInput.value = String(engineState.seed);
+
+    engineState.huffmanDesync = values.huffmanDesync;
+    dom.huffmanDesyncSlider.value = String(values.huffmanDesync);
+    dom.huffmanDesyncVal.textContent = String(values.huffmanDesync);
+
+    engineState.huffmanCorrupt = values.huffmanCorrupt;
+    dom.huffmanCorruptSlider.value = String(values.huffmanCorrupt);
+    dom.huffmanCorruptVal.textContent = String(values.huffmanCorrupt);
 
     clearProcessedCache();
   }
@@ -224,6 +234,18 @@ export function setupParameterController({
     onParamsChanged(true);
   });
 
+  dom.huffmanDesyncSlider.addEventListener("input", (e) => {
+    engineState.huffmanDesync = parseInt((e.target as HTMLInputElement).value, 10);
+    dom.huffmanDesyncVal.textContent = engineState.huffmanDesync.toString();
+    onParamsChanged(true);
+  });
+
+  dom.huffmanCorruptSlider.addEventListener("input", (e) => {
+    engineState.huffmanCorrupt = parseInt((e.target as HTMLInputElement).value, 10);
+    dom.huffmanCorruptVal.textContent = engineState.huffmanCorrupt.toString();
+    onParamsChanged(true);
+  });
+
   dom.seedInput.addEventListener("input", (e) => {
     const el = e.target as HTMLInputElement;
     const raw = el.value;
@@ -262,6 +284,8 @@ export function setupParameterController({
     { el: dom.dcStepSlider, key: "dcStep", clearCache: true },
     { el: dom.phaseShiftSlider, key: "phaseShift", clearCache: true },
     { el: dom.lockChromaSlider, key: "lockChroma", clearCache: true },
+    { el: dom.huffmanDesyncSlider, key: "huffmanDesync", clearCache: true },
+    { el: dom.huffmanCorruptSlider, key: "huffmanCorrupt", clearCache: true },
   ];
 
   for (const { el, key, clearCache } of sliderDoubleClickDefaults) {

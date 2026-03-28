@@ -34,6 +34,8 @@ export interface ParamUniformPackInput {
   useCustomFlow: boolean;
   invertDct: number; // 0 or 1
   lockChroma: number; // 0 or 1
+  huffmanDesyncPct: number;
+  huffmanCorruptPct: number;
 }
 
 export interface FrameSeedInput {
@@ -83,8 +85,8 @@ export function packParamsFloats(
   out[23] = p.useCustomFlow ? 1.0 : 0.0;
   out[24] = p.invertDct;
   out[25] = p.lockChroma / 100.0;
-  out[26] = 0.0;
-  out[27] = 0.0;
+  out[26] = p.huffmanDesyncPct / 100.0;
+  out[27] = p.huffmanCorruptPct / 100.0;
 }
 
 /** Knobs that affect processed-cache validity (must stay in sync with pack + presets). */
@@ -106,6 +108,8 @@ export interface ParamsFingerprintKnobs {
   phaseShift: number;
   invertDct: number;
   lockChroma: number;
+  huffmanDesync: number;
+  huffmanCorrupt: number;
 }
 
 function hashNumber(hash: number, value: number): number {
@@ -130,5 +134,7 @@ export function paramsFingerprint(k: ParamsFingerprintKnobs): number {
   hash = hashNumber(hash, k.dcStep);
   hash = hashNumber(hash, k.phaseShift);
   hash = hashNumber(hash, k.invertDct);
-  return hashNumber(hash, k.lockChroma);
+  hash = hashNumber(hash, k.lockChroma);
+  hash = hashNumber(hash, k.huffmanDesync);
+  return hashNumber(hash, k.huffmanCorrupt);
 }

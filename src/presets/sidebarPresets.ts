@@ -32,6 +32,8 @@ export interface SidebarPresetValues {
   phaseShift: number;
   invertDct: boolean;
   lockChroma: number;
+  huffmanDesync: number;
+  huffmanCorrupt: number;
 }
 
 export interface SidebarPresetRecord {
@@ -68,6 +70,8 @@ export const DEFAULT_SIDEBAR_PRESET_VALUES: SidebarPresetValues = {
   phaseShift: 0,
   invertDct: false,
   lockChroma: 0,
+  huffmanDesync: 0,
+  huffmanCorrupt: 0,
 };
 
 function clampInteger(value: unknown, min: number, max: number): number | null {
@@ -130,6 +134,8 @@ export function normalizeSidebarPresetValues(
   const phaseShift = clampInteger(input.phaseShift, 0, 100);
   const invertDct = readBoolean(input.invertDct);
   const lockChroma = clampInteger(input.lockChroma, 0, 100);
+  const huffmanDesync = clampInteger(input.huffmanDesync, 0, 100);
+  const huffmanCorrupt = clampInteger(input.huffmanCorrupt, 0, 100);
 
   const seedValue =
     typeof input.seed === "number" && Number.isFinite(input.seed)
@@ -154,6 +160,8 @@ export function normalizeSidebarPresetValues(
     phaseShift === null ||
     invertDct === null ||
     lockChroma === null ||
+    huffmanDesync === null ||
+    huffmanCorrupt === null ||
     seedValue === null
   ) {
     return null;
@@ -178,6 +186,8 @@ export function normalizeSidebarPresetValues(
     phaseShift,
     invertDct,
     lockChroma,
+    huffmanDesync,
+    huffmanCorrupt,
   };
 }
 

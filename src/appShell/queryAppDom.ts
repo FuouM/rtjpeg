@@ -45,6 +45,10 @@ export interface AppDom {
   invertDctToggle: HTMLInputElement;
   lockChromaSlider: HTMLInputElement;
   lockChromaVal: HTMLSpanElement;
+  huffmanDesyncSlider: HTMLInputElement;
+  huffmanDesyncVal: HTMLSpanElement;
+  huffmanCorruptSlider: HTMLInputElement;
+  huffmanCorruptVal: HTMLSpanElement;
   resetParamsBtn: HTMLButtonElement;
   presetChooser: HTMLSelectElement;
   presetManageBtn: HTMLButtonElement;
@@ -231,5 +235,9 @@ export function queryAppDom(): AppDom {
     invertDctToggle: req("invert-dct-toggle"),
     lockChromaSlider: req("lock-chroma-slider"),
     lockChromaVal: req("lock-chroma-val"),
+    huffmanDesyncSlider: req("huffman-desync-slider"),
+    huffmanDesyncVal: req("huffman-desync-val"),
+    huffmanCorruptSlider: req("huffman-corrupt-slider"),
+    huffmanCorruptVal: req("huffman-corrupt-val"),
   };
 }

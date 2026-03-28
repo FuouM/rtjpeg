@@ -11,6 +11,8 @@ import { flowState } from "../state/flowState";
 import { videoMetadataState } from "../state/videoMetadataState";
 import { seekScrubState } from "../timeline/seekScrub";
 
+import { packHuffmanLuts } from "../renderer/huffmanTables";
+
 export interface GpuControllerDeps {
   outputCanvas: HTMLCanvasElement;
   updateCacheCanvas: () => void;
@@ -91,9 +93,16 @@ export function setupGpuController(deps: GpuControllerDeps) {
       useCustomFlow: flowState.useCustomFlow,
       invertDct: engineState.invertDct,
       lockChroma: engineState.lockChroma,
+      huffmanDesyncPct: engineState.huffmanDesync,
+      huffmanCorruptPct: engineState.huffmanCorrupt,
     });
     gpu.device.queue.writeBuffer(gpu.paramsBuffer, 0, paramsData);
     engineState.moshResetRequested = false;
+
+    if ((engineState.huffmanDesync > 0 || engineState.huffmanCorrupt > 0) && gpu.huffmanLuts) {
+      const data = packHuffmanLuts();
+      gpu.device.queue.writeBuffer(gpu.huffmanLuts, 0, data.buffer, 0, data.byteLength);
+    }
   }
 
   return {

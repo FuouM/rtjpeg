@@ -402,6 +402,8 @@ export function createRenderLoop(deps: RenderLoopDeps) {
       const targetHeight =
         Math.ceil(Math.floor(sourceHeight / currentScale) / 16) * 16;
       deps.updateCanvasSize(targetWidth, targetHeight);
+      const total8x8Blocks = (targetWidth / 8) * (targetHeight / 8);
+      gpu.recreateHuffmanBuffers(total8x8Blocks);
 
       if (!gpu.storageTexture || !gpu.renderBindGroup) {
         scheduleNextFrame();
@@ -532,6 +534,9 @@ export function createRenderLoop(deps: RenderLoopDeps) {
           { binding: 3, resource: gpu.prevStorageTextureView! },
           // Fall back to neutral 1×1 texture when no previous input exists (first frame).
           { binding: 4, resource: prevInputView ?? gpu.neutralTextureView },
+          { binding: 5, resource: { buffer: gpu.encodedBitstream! } },
+          { binding: 6, resource: { buffer: gpu.bitstreamMetadata! } },
+          { binding: 7, resource: { buffer: gpu.huffmanLuts! } },
         ],
       });
 
