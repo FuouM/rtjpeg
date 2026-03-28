@@ -52,8 +52,37 @@ function deriveCodes(bits: number[], vals: number[]) {
   return codes;
 }
 
+function deriveDecodingLUT(bits: number[], vals: number[]) {
+  const lut = new Uint32Array(65536); // 16-bit LUT
+  lut.fill(0xffff); // Default to "invalid"
+
+  let huffCode = 0;
+  let idx = 0;
+  for (let len = 1; len <= 16; len++) {
+    for (let i = 0; i < bits[len - 1]; i++) {
+      const symbol = vals[idx++];
+      // Fill all entries that start with this prefix
+      const numEntries = 1 << (16 - len);
+      const startIdx = huffCode << (16 - len);
+      for (let j = 0; j < numEntries; j++) {
+        // If entry is not yet filled (protect shorter codes), fill it
+        // Huffman codes are prefix-free, so shorter codes are processed first
+        // and shouldn't be overwritten by their own extensions, 
+        // but here extensions are processed LATER. 
+        // wait! Standard Huffman: shorter codes are prefixes of NOTHING.
+        // So startIdx range is unique.
+        lut[startIdx + j] = (len << 8) | symbol;
+      }
+      huffCode++;
+    }
+    huffCode <<= 1;
+  }
+  return lut;
+}
+
 export function packHuffmanLuts(): Uint32Array {
-  const lut = new Uint32Array(1024); // 4KB
+  // Total size: 536 (encoding) + 4 * 65536 (decoding) = 262680 words (~1MB)
+  const lut = new Uint32Array(300000); 
 
   const lumaDCCodes = deriveCodes(LUMA_DC_BITS, LUMA_DC_VALS);
   const chromaDCCodes = deriveCodes(CHROMA_DC_BITS, CHROMA_DC_VALS);
@@ -80,8 +109,16 @@ export function packHuffmanLuts(): Uint32Array {
     lut[280 + rs] = (c.code << 16) | c.len;
   }
 
-  // Decoding LUTs (Optional enhancement): For now we'll search by code in shader
-  // or use a more clever storage if needed.
+  // Decoding LUTs (Start at 536)
+  const lumaDCDec = deriveDecodingLUT(LUMA_DC_BITS, LUMA_DC_VALS);
+  const chromaDCDec = deriveDecodingLUT(CHROMA_DC_BITS, CHROMA_DC_VALS);
+  const lumaACDec = deriveDecodingLUT(LUMA_AC_BITS, LUMA_AC_VALS);
+  const chromaACDec = deriveDecodingLUT(CHROMA_AC_BITS, CHROMA_AC_VALS);
+
+  lut.set(lumaDCDec, 536);
+  lut.set(chromaDCDec, 536 + 65536);
+  lut.set(lumaACDec, 536 + 131072);
+  lut.set(chromaACDec, 536 + 196608);
 
   return lut;
 }

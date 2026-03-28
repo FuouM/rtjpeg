@@ -161,9 +161,9 @@ export class GpuContext {
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
 
-    // Pre-computed tables (approx 4KB)
+    // Pre-computed tables (approx 1.2MB for 16-bit LUTs)
     this.huffmanLuts = this.device.createBuffer({
-      size: 4096,
+      size: 2 * 1024 * 1024, // 2MB
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
   }
