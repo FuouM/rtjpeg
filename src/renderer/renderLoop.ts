@@ -326,7 +326,11 @@ export function createRenderLoop(deps: RenderLoopDeps) {
         return;
       }
 
-      let timeToRender = sourceVideo.currentTime;
+      // Use playbackTiming (RVFC mediaTime when available), not currentTime — they can disagree
+      // with the composited frame, which desyncs split-compare vs the <video> element.
+      let timeToRender = deps.isImageSource()
+        ? deps.livePlaybackCacheTime()
+        : playbackTiming.lastMediaTime;
       const scrubTime = deps.getScrubTime();
       if (deps.getIsSeeking() && scrubTime !== null) {
         timeToRender = scrubTime;
