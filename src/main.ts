@@ -812,6 +812,7 @@ const { render, scheduleNextFrame, primePlaybackFrameLoop } = createRenderLoop({
       invertDct: engineState.invertDct,
       lockChroma: engineState.lockChroma,
       huffmanDesync: engineState.huffmanDesync,
+      huffmanShift: engineState.huffmanShift,
       huffmanCorrupt: engineState.huffmanCorrupt,
     }),
   shouldUseProcessedFrameCache,

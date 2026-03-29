@@ -161,6 +161,18 @@ export const damageRangeControls: RangeControlConfig[] = [
     helpAriaLabel: "Huffman desync: bitstream offset drift",
   },
   {
+    id: "huffman-shift-slider",
+    labelHtml: "Bit Shift",
+    valueId: "huffman-shift-val",
+    valueText: "0",
+    valueSuffixHtml: "%",
+    min: "0",
+    max: "100",
+    value: "0",
+    helpTitle: "1-Bit shift left (pure bitstream desynchronization).",
+    helpAriaLabel: "Huffman Shift: 1-bit bitstream left shift",
+  },
+  {
     id: "huffman-corrupt-slider",
     labelHtml: "Bit Corrupt",
     valueId: "huffman-corrupt-val",

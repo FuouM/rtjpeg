@@ -94,13 +94,14 @@ export function setupGpuController(deps: GpuControllerDeps) {
       invertDct: engineState.invertDct,
       lockChroma: engineState.lockChroma,
       huffmanDesyncPct: engineState.huffmanDesync,
+      huffmanShiftPct: engineState.huffmanShift,
       huffmanCorruptPct: engineState.huffmanCorrupt,
     });
     gpu.device.queue.writeBuffer(gpu.paramsBuffer, 0, paramsData);
     engineState.moshResetRequested = false;
 
     if (
-      (engineState.huffmanDesync > 0 || engineState.huffmanCorrupt > 0) &&
+      (engineState.huffmanDesync > 0 || engineState.huffmanCorrupt > 0 || engineState.huffmanShift > 0) &&
       gpu.huffmanLuts
     ) {
       const data = packHuffmanLuts();

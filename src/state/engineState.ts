@@ -25,5 +25,6 @@ export const engineState = {
   invertDct: 0,
   lockChroma: 0,
   huffmanDesync: 0,
+  huffmanShift: 0,
   huffmanCorrupt: 0,
 };

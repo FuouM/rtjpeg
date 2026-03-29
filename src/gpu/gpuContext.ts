@@ -79,7 +79,7 @@ export class GpuContext {
       minFilter: "linear",
     });
     const paramsBuffer = device.createBuffer({
-      size: 112, // 28 floats (7 vec4s)
+      size: 128, // 32 floats (8 vec4s)
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     const neutralTexture = device.createTexture({

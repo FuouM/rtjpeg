@@ -15,6 +15,7 @@ struct Params {
   row4: vec4<f32>,
   row5: vec4<f32>,
   row6: vec4<f32>, // x: invert DCT, y: lock chroma table, z: huffman desync, w: huffman corrupt
+  row7: vec4<f32>, // x: huffman shift
 }
 
 struct HuffmanEntry {
@@ -790,7 +791,8 @@ fn compute_main(
   // -----------------------------------------------------------------------
   let hDesync = params.row6.z;
   let hCorrupt = params.row6.w;
-  if (hDesync > 0.0 || hCorrupt > 0.0) {
+  let hShift = params.row7.x;
+  if (hDesync > 0.0 || hCorrupt > 0.0 || hShift > 0.0) {
     let blockIdxInGroup = qy * 2u + qx;
     let tidInSubgroup = oy * 8u + ox;
     
@@ -862,24 +864,50 @@ fn compute_main(
     
     workgroupBarrier(); // Wait for encoding to finish
 
-    // 3. Parallel Corruption Stage (All threads)
-    if (hCorrupt > 0.0) {
+    // 3. Parallel Corruption and Shift Stage (All threads)
+    if (hCorrupt > 0.0 || hShift > 0.0) {
       // Each block has 256 words; with 64 threads, each thread handles 4 words
       for (var w = tidInSubgroup; w < 256u; w += 64u) {
-        // Corrupt Y
-        let seedY = hash3(vec3<u32>(globalBlockIdx, w, u32(params.row2.y)));
-        if (seedY < hCorrupt) {
-          encodedBitstream[blockBaseIdx + w] ^= (1u << u32(seedY * 32.0));
+        // Shift and Corrupt Y
+        if (hShift > 0.0) {
+          let seedShiftY = hash3(vec3<u32>(globalBlockIdx, w, 444u + u32(params.row2.y)));
+          if (seedShiftY < hShift) {
+            encodedBitstream[blockBaseIdx + w] = encodedBitstream[blockBaseIdx + w] << 1u;
+          }
         }
+        if (hCorrupt > 0.0) {
+          let seedY = hash3(vec3<u32>(globalBlockIdx, w, u32(params.row2.y)));
+          if (seedY < hCorrupt) {
+            encodedBitstream[blockBaseIdx + w] ^= (1u << u32(seedY * 32.0));
+          }
+        }
+        
         // Corrupt Chroma
         if (cMode < 3u) {
-          let seedCb = hash3(vec3<u32>(globalBlockIdx + totalBlocks, w, u32(params.row2.y)));
-          if (seedCb < hCorrupt) {
-            encodedBitstream[cbBlockBaseIdx + w] ^= (1u << u32(seedCb * 32.0));
+          if (hShift > 0.0) {
+            let seedShiftCb = hash3(vec3<u32>(globalBlockIdx + totalBlocks, w, 444u + u32(params.row2.y)));
+            if (seedShiftCb < hShift) {
+              encodedBitstream[cbBlockBaseIdx + w] = encodedBitstream[cbBlockBaseIdx + w] << 1u;
+            }
           }
-          let seedCr = hash3(vec3<u32>(globalBlockIdx + 2u * totalBlocks, w, u32(params.row2.y)));
-          if (seedCr < hCorrupt) {
-            encodedBitstream[crBlockBaseIdx + w] ^= (1u << u32(seedCr * 32.0));
+          if (hCorrupt > 0.0) {
+            let seedCb = hash3(vec3<u32>(globalBlockIdx + totalBlocks, w, u32(params.row2.y)));
+            if (seedCb < hCorrupt) {
+              encodedBitstream[cbBlockBaseIdx + w] ^= (1u << u32(seedCb * 32.0));
+            }
+          }
+          
+          if (hShift > 0.0) {
+            let seedShiftCr = hash3(vec3<u32>(globalBlockIdx + 2u * totalBlocks, w, 444u + u32(params.row2.y)));
+            if (seedShiftCr < hShift) {
+              encodedBitstream[crBlockBaseIdx + w] = encodedBitstream[crBlockBaseIdx + w] << 1u;
+            }
+          }
+          if (hCorrupt > 0.0) {
+            let seedCr = hash3(vec3<u32>(globalBlockIdx + 2u * totalBlocks, w, u32(params.row2.y)));
+            if (seedCr < hCorrupt) {
+              encodedBitstream[crBlockBaseIdx + w] ^= (1u << u32(seedCr * 32.0));
+            }
           }
         }
       }

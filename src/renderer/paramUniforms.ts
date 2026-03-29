@@ -2,7 +2,7 @@
  * CPU packing for `@group(0) @binding(2) var<uniform> params: Params` in `jpeg_compute.wgsl`.
  * Layout mirrors WGSL comments (7×vec4 = 28 floats).
  */
-export const PARAM_FLOAT_COUNT = 28;
+export const PARAM_FLOAT_COUNT = 32;
 
 /** Slider / UI values before normalization (matches `main` sidebar state). */
 export interface ParamUniformPackInput {
@@ -35,6 +35,7 @@ export interface ParamUniformPackInput {
   invertDct: number; // 0 or 1
   lockChroma: number; // 0 or 1
   huffmanDesyncPct: number;
+  huffmanShiftPct: number;
   huffmanCorruptPct: number;
 }
 
@@ -87,6 +88,7 @@ export function packParamsFloats(
   out[25] = p.lockChroma / 100.0;
   out[26] = p.huffmanDesyncPct / 100.0;
   out[27] = p.huffmanCorruptPct / 100.0;
+  out[28] = p.huffmanShiftPct / 100.0;
 }
 
 /** Knobs that affect processed-cache validity (must stay in sync with pack + presets). */
@@ -109,6 +111,7 @@ export interface ParamsFingerprintKnobs {
   invertDct: number;
   lockChroma: number;
   huffmanDesync: number;
+  huffmanShift: number;
   huffmanCorrupt: number;
 }
 
@@ -136,5 +139,6 @@ export function paramsFingerprint(k: ParamsFingerprintKnobs): number {
   hash = hashNumber(hash, k.invertDct);
   hash = hashNumber(hash, k.lockChroma);
   hash = hashNumber(hash, k.huffmanDesync);
+  hash = hashNumber(hash, k.huffmanShift);
   return hashNumber(hash, k.huffmanCorrupt);
 }

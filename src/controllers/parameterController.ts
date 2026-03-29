@@ -39,6 +39,7 @@ export function setupParameterController({
       invertDct: engineState.invertDct === 1,
       lockChroma: engineState.lockChroma,
       huffmanDesync: engineState.huffmanDesync,
+      huffmanShift: engineState.huffmanShift,
       huffmanCorrupt: engineState.huffmanCorrupt,
     };
   }
@@ -174,6 +175,10 @@ export function setupParameterController({
     dom.huffmanDesyncSlider.value = String(values.huffmanDesync);
     dom.huffmanDesyncVal.textContent = String(values.huffmanDesync);
 
+    engineState.huffmanShift = values.huffmanShift;
+    dom.huffmanShiftSlider.value = String(values.huffmanShift);
+    dom.huffmanShiftVal.textContent = String(values.huffmanShift);
+
     engineState.huffmanCorrupt = values.huffmanCorrupt;
     dom.huffmanCorruptSlider.value = String(values.huffmanCorrupt);
     dom.huffmanCorruptVal.textContent = String(values.huffmanCorrupt);
@@ -301,6 +306,15 @@ export function setupParameterController({
     onParamsChanged(true);
   });
 
+  dom.huffmanShiftSlider.addEventListener("input", (e) => {
+    engineState.huffmanShift = parseInt(
+      (e.target as HTMLInputElement).value,
+      10,
+    );
+    dom.huffmanShiftVal.textContent = engineState.huffmanShift.toString();
+    onParamsChanged(true);
+  });
+
   dom.huffmanCorruptSlider.addEventListener("input", (e) => {
     engineState.huffmanCorrupt = parseInt(
       (e.target as HTMLInputElement).value,
@@ -349,6 +363,7 @@ export function setupParameterController({
     { el: dom.phaseShiftSlider, key: "phaseShift", clearCache: true },
     { el: dom.lockChromaSlider, key: "lockChroma", clearCache: true },
     { el: dom.huffmanDesyncSlider, key: "huffmanDesync", clearCache: true },
+    { el: dom.huffmanShiftSlider, key: "huffmanShift", clearCache: true },
     { el: dom.huffmanCorruptSlider, key: "huffmanCorrupt", clearCache: true },
   ];
 

@@ -49,6 +49,8 @@ export interface AppDom {
   lockChromaVal: HTMLSpanElement;
   huffmanDesyncSlider: HTMLInputElement;
   huffmanDesyncVal: HTMLSpanElement;
+  huffmanShiftSlider: HTMLInputElement;
+  huffmanShiftVal: HTMLSpanElement;
   huffmanCorruptSlider: HTMLInputElement;
   huffmanCorruptVal: HTMLSpanElement;
   resetParamsBtn: HTMLButtonElement;
@@ -247,6 +249,8 @@ export function queryAppDom(): AppDom {
     lockChromaVal: req("lock-chroma-val"),
     huffmanDesyncSlider: req("huffman-desync-slider"),
     huffmanDesyncVal: req("huffman-desync-val"),
+    huffmanShiftSlider: req("huffman-shift-slider"),
+    huffmanShiftVal: req("huffman-shift-val"),
     huffmanCorruptSlider: req("huffman-corrupt-slider"),
     huffmanCorruptVal: req("huffman-corrupt-val"),
   };

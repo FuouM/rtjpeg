@@ -33,6 +33,7 @@ export interface SidebarPresetValues {
   invertDct: boolean;
   lockChroma: number;
   huffmanDesync: number;
+  huffmanShift: number;
   huffmanCorrupt: number;
 }
 
@@ -71,6 +72,7 @@ export const DEFAULT_SIDEBAR_PRESET_VALUES: SidebarPresetValues = {
   invertDct: false,
   lockChroma: 0,
   huffmanDesync: 0,
+  huffmanShift: 0,
   huffmanCorrupt: 0,
 };
 
@@ -135,6 +137,7 @@ export function normalizeSidebarPresetValues(
   const invertDct = readBoolean(input.invertDct);
   const lockChroma = clampInteger(input.lockChroma, 0, 100);
   const huffmanDesync = clampInteger(input.huffmanDesync, 0, 100);
+  const huffmanShift = clampInteger(input.huffmanShift, 0, 100);
   const huffmanCorrupt = clampInteger(input.huffmanCorrupt, 0, 100);
 
   const seedValue =
@@ -161,6 +164,7 @@ export function normalizeSidebarPresetValues(
     invertDct === null ||
     lockChroma === null ||
     huffmanDesync === null ||
+    huffmanShift === null ||
     huffmanCorrupt === null ||
     seedValue === null
   ) {
@@ -187,6 +191,7 @@ export function normalizeSidebarPresetValues(
     invertDct,
     lockChroma,
     huffmanDesync,
+    huffmanShift,
     huffmanCorrupt,
   };
 }

@@ -48,7 +48,8 @@ export function renderControlsPanel(): string {
 
   const bitstreamControls = [
     renderRangeControl(damageRangeControls[8]), // Bit Desync
-    renderRangeControl(damageRangeControls[9]), // Bit Corrupt
+    renderRangeControl(damageRangeControls[9]), // Bit Shift
+    renderRangeControl(damageRangeControls[10]), // Bit Corrupt
   ].join("");
 
   return `
