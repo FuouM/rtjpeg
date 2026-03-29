@@ -40,6 +40,8 @@ export interface AppDom {
   dcStepVal: HTMLSpanElement;
   phaseShiftSlider: HTMLInputElement;
   phaseShiftVal: HTMLSpanElement;
+  phaseShiftCanvas: HTMLCanvasElement;
+  phaseShiftCtx: CanvasRenderingContext2D;
   echoBeforeToggle: HTMLInputElement;
   driftToggle: HTMLInputElement;
   invertDctToggle: HTMLInputElement;
@@ -130,6 +132,12 @@ export function queryAppDom(): AppDom {
     throw new Error("[rtjpeg] Missing 2D context for #timeline-canvas");
   }
 
+  const phaseShiftCanvas = req<HTMLCanvasElement>("phase-shift-canvas");
+  const phaseShiftCtx = phaseShiftCanvas.getContext("2d");
+  if (!phaseShiftCtx) {
+    throw new Error("[rtjpeg] Missing 2D context for #phase-shift-canvas");
+  }
+
   return {
     videoUpload: req("video-upload"),
     sourceVideo: req("source-video"),
@@ -159,6 +167,8 @@ export function queryAppDom(): AppDom {
     dcStepVal: req("dc-step-val"),
     phaseShiftSlider: req("phase-shift-slider"),
     phaseShiftVal: req("phase-shift-val"),
+    phaseShiftCanvas,
+    phaseShiftCtx,
     echoBeforeToggle: req("echo-before-toggle"),
     driftToggle: req("drift-toggle"),
     resetParamsBtn: req("reset-params"),

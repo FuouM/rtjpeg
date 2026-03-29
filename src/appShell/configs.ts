@@ -135,20 +135,7 @@ export const damageRangeControls: RangeControlConfig[] = [
       "DC Stepping: quantize only the DC brightness coefficient to create flat banded lighting with sharp details.",
     helpAriaLabel: "DC Step: Stepped banding in DC coefficients",
   },
-  {
-    id: "phase-shift-slider",
-    labelHtml: "Phase Shift",
-    valueId: "phase-shift-val",
-    valueText: "0",
-    valueSuffixHtml: "%",
-    min: "0",
-    max: "100",
-    value: "0",
-    helpTitle:
-      "Audio-style coefficient phase shift (Sine wave math on DCT array).",
-    helpAriaLabel:
-      "Phase Shift: Audacity style sine wave across frequency bins",
-  },
+
   {
     id: "lock-chroma-slider",
     labelHtml: "Lock Chroma",
@@ -186,6 +173,21 @@ export const damageRangeControls: RangeControlConfig[] = [
     helpAriaLabel: "Huffman corrupt: bitstream bit flips",
   },
 ];
+
+export const phaseShiftControl: RangeControlConfig = {
+  id: "phase-shift-slider",
+  labelHtml: "Phase Shift",
+  valueId: "phase-shift-val",
+  valueText: "0",
+  valueSuffixHtml: "%",
+  min: "0",
+  max: "100",
+  value: "0",
+  helpTitle:
+    "Audio-style coefficient phase shift (Sine wave math on DCT array).",
+  helpAriaLabel:
+    "Phase Shift: Audacity style sine wave across frequency bins",
+};
 
 export const chromaControl: SelectControlConfig = {
   id: "chroma-select",

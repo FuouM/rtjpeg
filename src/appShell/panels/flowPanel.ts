@@ -7,11 +7,12 @@ import {
   PANEL_CLASS,
   PARAM_INPUT_NUMBER_CLASS,
 } from "../uiClasses";
-import { chromaControl } from "../configs";
+import { chromaControl, phaseShiftControl } from "../configs";
 import {
   renderHelpButton,
   renderSectionLabel,
   renderSelectControl,
+  renderRangeControl,
 } from "../renderPrimitives";
 
 export function renderFlowPanel(): string {
@@ -59,6 +60,13 @@ export function renderFlowPanel(): string {
             Works with LK-Mosh slider</p>
 
           <div class="mt-3 pt-2 border-t-2 border-black dark:border-white flex flex-col gap-2 shrink-0 lg:mt-auto lg:pt-1 lg:gap-1.5">
+            <div class="flex flex-col gap-1.5 shrink-0">
+              ${renderSectionLabel("Phase Shift", "pb-0.5")}
+              ${renderRangeControl(phaseShiftControl)}
+              <div class="relative w-full h-10 border-2 border-black dark:border-white bg-brutalWhite dark:bg-[#111] box-border shrink-0">
+                <canvas id="phase-shift-canvas" class="absolute inset-0 h-full w-full" style="display:block;"></canvas>
+              </div>
+            </div>
             ${renderSelectControl(chromaControl)}
             <div class="flex flex-col gap-1.5 shrink-0">
               ${renderSectionLabel("RNG Seed", "pb-0.5")}

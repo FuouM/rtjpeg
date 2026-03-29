@@ -43,6 +43,62 @@ export function setupParameterController({
     };
   }
 
+  function drawPhaseShiftPreview() {
+    const ctx = dom.phaseShiftCtx;
+    const canvas = dom.phaseShiftCanvas;
+    // ensure clear render resolution
+    const rect = canvas.getBoundingClientRect();
+    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    const phaseShift = engineState.phaseShift;
+    const isDark = document.documentElement.classList.contains("dark");
+    const pct = phaseShift / 100.0;
+    const manualPhase = pct * 12.56637; // 4PI
+
+    // Unshifted base sine wave (reference)
+    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    for (let idx = 0; idx <= 63; idx++) {
+      const baseWave = Math.sin(idx * 0.4); 
+      const baseX = (idx / 63) * width;
+      const baseY = (height / 2) - (baseWave * (height / 2) * 0.8);
+      if (idx === 0) ctx.moveTo(baseX, baseY);
+      else ctx.lineTo(baseX, baseY);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Shifted and amplitude-modulated wave
+    ctx.strokeStyle = "#10B981"; // Emerald green
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (let idx = 0; idx <= 63; idx++) {
+      const wave = Math.sin(idx * 0.4 + manualPhase);
+      const ampMod = wave * pct; 
+      
+      const x = (idx / 63) * width;
+      const y = (height / 2) - (ampMod * (height / 2) * 0.8);
+      
+      if (idx === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // Draw once after a tiny delay so layout sizes canvas properly
+  requestAnimationFrame(drawPhaseShiftPreview);
+
   function setScaleIndex(index: number): void {
     const clamped = Math.min(Math.max(index, 0), SCALE_STEPS.length - 1);
     engineState.scaleIndex = clamped;
@@ -102,6 +158,7 @@ export function setupParameterController({
     engineState.phaseShift = values.phaseShift;
     dom.phaseShiftSlider.value = String(values.phaseShift);
     dom.phaseShiftVal.textContent = String(values.phaseShift);
+    drawPhaseShiftPreview();
 
     engineState.invertDct = values.invertDct ? 1 : 0;
     dom.invertDctToggle.checked = values.invertDct;
@@ -215,6 +272,7 @@ export function setupParameterController({
   dom.phaseShiftSlider.addEventListener("input", (e) => {
     engineState.phaseShift = parseInt((e.target as HTMLInputElement).value, 10);
     dom.phaseShiftVal.textContent = engineState.phaseShift.toString();
+    drawPhaseShiftPreview();
     onParamsChanged(true);
   });
 
