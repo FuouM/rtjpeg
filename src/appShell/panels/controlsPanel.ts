@@ -16,18 +16,39 @@ import {
 } from "../renderPrimitives";
 
 export function renderControlsPanel(): string {
-  const encodeControls = [
-    ...encodeRangeControls.slice(0, 3).map(renderRangeControl),
-    renderToggleControl(toggleControls[0]),
+    const encodeControls = [
+    renderRangeControl(encodeRangeControls[0]), // Quality
+    renderRangeControl(encodeRangeControls[1]), // Resolution
   ].join("");
 
-  const damageControls = [
-    renderRangeControl(damageRangeControls[0]),
-    renderRangeControl(damageRangeControls[1]),
-    renderDatamoshControl(),
-    ...damageRangeControls.slice(2).map(renderRangeControl),
-    renderToggleControl(toggleControls[1], "-mt-0.5"),
-    renderToggleControl(toggleControls[2], "-mt-0.5"),
+  const dctControls = [
+    renderRangeControl(damageRangeControls[2]), // Chaos
+    renderRangeControl(damageRangeControls[4]), // Posterize
+    renderRangeControl(encodeRangeControls[2]), // Ringing
+    renderRangeControl(damageRangeControls[6]), // DC Step
+    renderToggleControl(toggleControls[2], "-mt-0.5"), // Invert DCT
+  ].join("");
+
+  const blockControls = [
+    renderRangeControl(damageRangeControls[0]), // Dropout
+    renderRangeControl(damageRangeControls[1]), // HS-Block
+    renderDatamoshControl(), // Datamosh
+  ].join("");
+
+  const colorControls = [
+    renderRangeControl(damageRangeControls[3]), // Color Bleed
+    renderToggleControl(toggleControls[0], "-mt-0.5"), // Color Drift
+    renderRangeControl(damageRangeControls[7]), // Lock Chroma
+  ].join("");
+
+  const feedbackControls = [
+    renderRangeControl(damageRangeControls[5]), // Feedback
+    renderToggleControl(toggleControls[1], "-mt-0.5"), // Feedback Pre-Pass
+  ].join("");
+
+  const bitstreamControls = [
+    renderRangeControl(damageRangeControls[8]), // Bit Desync
+    renderRangeControl(damageRangeControls[9]), // Bit Corrupt
   ].join("");
 
   return `
@@ -66,9 +87,29 @@ export function renderControlsPanel(): string {
             ${encodeControls}
           </div>
 
-          ${renderSectionLabel("Glitch", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
+          ${renderSectionLabel("Frequencies (DCT)", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
           <div class="flex flex-col gap-2 lg:gap-1">
-            ${damageControls}
+            ${dctControls}
+          </div>
+
+          ${renderSectionLabel("Blocks & Motion", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
+          <div class="flex flex-col gap-2 lg:gap-1">
+            ${blockControls}
+          </div>
+
+          ${renderSectionLabel("Color", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
+          <div class="flex flex-col gap-2 lg:gap-1">
+            ${colorControls}
+          </div>
+
+          ${renderSectionLabel("Temporal Feedback", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
+          <div class="flex flex-col gap-2 lg:gap-1">
+            ${feedbackControls}
+          </div>
+
+          ${renderSectionLabel("Bitstream", "mb-1 mt-2.5 lg:mb-0.5 lg:mt-1.5")}
+          <div class="flex flex-col gap-2 lg:gap-1">
+            ${bitstreamControls}
           </div>
         </section>
         </div>
